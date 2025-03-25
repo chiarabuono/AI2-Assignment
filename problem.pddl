@@ -6,6 +6,7 @@
 
 (:init
     (free moverA) (free moverB)
+    (free_loader loaderA)
     ; crateA
     (= (weight crateA) 70)
     (= (distance crateA) 10)

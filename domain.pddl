@@ -1,7 +1,7 @@
 (define (domain warehouse)
 
-(:requirements :strips :fluents :typing :conditional-effects :equality :numeric-fluents :time :duration-inequalities :numeric-fluents)
-; :durative-actions :timed-initial-literals :negative-preconditions 
+(:requirements :strips :fluents :typing :conditional-effects :equality :numeric-fluents :time :duration-inequalities :negative-preconditions)
+; :durative-actions :timed-initial-literals
 (:types crate mover loader )
 
 (:functions
@@ -17,19 +17,23 @@
     (hold ?c - crate)
     (loaded ?c - crate)
     (free ?m - mover)
+    (free_loader ?l - loader)
     (at ?c - crate ?l - loader)
     (on-floor ?c - crate)       ; negation of hold (more or less)
 )
 
-
-  (:action load
+; loader loads one crate per time
+(:durative-action load
     :parameters (?c - crate ?l - loader)
-    :precondition (and (at ?c ?l) (on-floor ?c)
+    :duration (= ?duration 4)
+    :condition (and 
+        (at start (and (at ?c ?l) (on-floor ?c) (free_loader ?l))) ; Aggiunto free_loader come precondizione
     )
     :effect (and 
-      (loaded ?c)
+        (at start (not (free_loader ?l))) ; Il loader diventa occupato all'inizio
+        (at end (and (loaded ?c) (not (on-floor ?c)) (free_loader ?l))) ; Il loader diventa libero alla fine
     )
-  )
+)
 
 
 ; start - moving
