@@ -27,14 +27,15 @@
     :parameters (?c - crate ?l - loader)
     :duration (= ?duration 4)
     :condition (and 
-        (at start (and (at ?c ?l) (on-floor ?c) (free_loader ?l))) ; Aggiunto free_loader come precondizione
+        (at start (and (at ?c ?l) (free_loader ?l)))
+        (at start (on-floor ?c))
     )
     :effect (and 
-        (at start (not (free_loader ?l))) ; Il loader diventa occupato all'inizio
-        (at end (and (loaded ?c) (not (on-floor ?c)) (free_loader ?l))) ; Il loader diventa libero alla fine
+        (at start (and(not (free_loader ?l)) (hold ?c) (not (on-floor ?c))))
+        (at end (and (free_loader ?l) 
+                    (loaded ?c)  (not (hold ?c))))
     )
 )
-
 
 ; start - moving
 (:action pick-up
@@ -50,7 +51,8 @@
     )
 )
 
-
+; TO DO - implementing moving such that only the mover that picked up the crate is moving it
+; create a macro = pick-up + moving?
   (:durative-action moving
     :parameters (?c - crate ?m - mover ?l - loader)
     :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
@@ -82,6 +84,4 @@
 
 )
 
-; ? I am using a durative action, is it all right if I use BFWS or OPTIC as planning engines?
-; Is it correct using functions for 'attributes'?
-; :negative-preconditions can we use it?
+
