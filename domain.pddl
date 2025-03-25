@@ -14,7 +14,7 @@
 ;(:constants )
 
 (:predicates
-    (hold ?c - crate)
+    (hold ?c - crate ?m - mover)
     (loaded ?c - crate)
     (free ?m - mover)
     (free_loader ?l - loader)
@@ -31,9 +31,8 @@
         (at start (on-floor ?c))
     )
     :effect (and 
-        (at start (and(not (free_loader ?l)) (hold ?c) (not (on-floor ?c))))
-        (at end (and (free_loader ?l) 
-                    (loaded ?c)  (not (hold ?c))))
+        (at start (and(not (free_loader ?l)) (not (on-floor ?c))))
+        (at end (and (free_loader ?l) (loaded ?c)))
     )
 )
 
@@ -42,12 +41,13 @@
     :parameters (?c - crate ?m - mover)
     :precondition (and 
         (free ?m)
+        (on-floor ?c)
         ;(< (weight ?c) 50)
         (> (distance ?c) 0)
     )
-    :effect (and (hold ?c)
-    (not (free ?m)) 
-    ;(moving ?c ?m)
+    :effect (and (hold ?c ?m)
+    (not (free ?m))
+    (not (on-floor ?c)) 
     )
 )
 
@@ -57,7 +57,7 @@
     :parameters (?c - crate ?m - mover ?l - loader)
     :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
     :condition (and 
-      (at start (hold ?c))
+      (at start (hold ?c ?m))
       (at start (> (distance ?c) 0))
       (at start (> (weight ?c) 0))
     )
@@ -76,7 +76,7 @@
       :precondition (and (= (distance ?c) 0)
       )
       :effect (and (free ?m)
-                    (not (hold ?c))
+                    (not (hold ?c ?m))
                     (on-floor ?c)
       )
   )

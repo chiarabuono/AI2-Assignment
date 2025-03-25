@@ -10,10 +10,12 @@
     ; crateA
     (= (weight crateA) 70)
     (= (distance crateA) 10)
+    (on-floor crateA)
 
     ; crateB
     (= (weight crateB) 20)
     (= (distance crateB) 20)
+    (on-floor crateB)
 )
 
 (:goal (and
