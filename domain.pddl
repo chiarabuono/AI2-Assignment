@@ -79,3 +79,5 @@
 )
 
 ; ? I am using a durative action, is it all right if I use BFWS or OPTIC as planning engines?
+; Is it correct using functions for 'attributes'?
+; :negative-preconditions can we use it?
