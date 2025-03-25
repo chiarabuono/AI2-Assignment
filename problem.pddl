@@ -1,23 +1,42 @@
-(define (problem problem05) (:domain warehouse)
-(:objects crateA crateB - crate
+(define (problem problem2) (:domain warehouse)
+(:objects crateA crateB crateC crateD - crate
     moverA moverB - mover
     loaderA - loader
 )
 
 (:init
     (free moverA) (free moverB)
+    (free_loader loaderA)
     ; crateA
     (= (weight crateA) 70)
     (= (distance crateA) 10)
+    (= (fragile crateA)0)
+    (= (group crateA) 1)
 
     ; crateB
-    (= (weight crateB) 20)
+    (= (weight crateB) 80)
     (= (distance crateB) 20)
+    (= (fragile crateB)1)
+    (= (group crateB) 1)
+
+    ; crateC
+    (= (weight crateC) 20)
+    (= (distance crateC) 20)
+    (= (fragile crateC)0)
+    (= (group crateC) 2)
+
+    ; crateD
+    (= (weight crateD) 30)
+    (= (distance crateD) 10)
+    (= (fragile crateD)0)
+    (= (group crateD) 2)
 )
 
 (:goal (and
     (loaded crateA)
     (loaded crateB)
+    (loaded crateC)
+    (loaded crateD)
 ))
 
 )

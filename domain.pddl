@@ -5,8 +5,10 @@
 (:types crate mover loader )
 
 (:functions
-    (weight ?c - crate) ;- number ; weight of the crate
-    (distance ?d - crate) ;- number ; distance of the crate from loading bay
+  (weight ?w - crate) ; weight of the crate
+  (distance ?d - crate) ; distance of the crate from loading bay
+  (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
+  (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
 )
 
 
@@ -17,6 +19,7 @@
     (hold ?c - crate)
     (loaded ?c - crate)
     (free ?m - mover)
+    (free_loader ?l - loader)
     (at ?c - crate ?l - loader)
     (on-floor ?c - crate)       ; negation of hold (more or less)
 )
