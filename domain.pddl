@@ -21,7 +21,7 @@
     (free ?m - mover)
     (free_loader ?l - loader)
     (at ?c - crate ?l - loader)
-    (on-floor ?c - crate)       ; negation of hold (more or less)
+    (on-floor ?c - crate)      
 )
 
 ; loader loads one crate per time
@@ -41,11 +41,9 @@
 ; start - moving
 (:action pick-up
     :parameters (?c - crate ?m - mover)
-    :precondition (and 
-        (free ?m)
-        (on-floor ?c)
-        ;(< (weight ?c) 50)
-        (> (distance ?c) 0)
+    :precondition (and  (free ?m)
+                        (on-floor ?c)
+                        (< (weight ?c) 50) (> (distance ?c) 0)
     )
     :effect (and (hold ?c ?m)
     (not (free ?m))
@@ -53,15 +51,25 @@
     )
 )
 
-; TO DO - implementing moving such that only the mover that picked up the crate is moving it
-; create a macro = pick-up + moving?
-  (:durative-action moving
+(:action pick-up-two-movers
+    :parameters (?c - crate ?m1 - mover ?m2 - mover)
+    :precondition (and  (free ?m1) (free ?m2) 
+                        (on-floor ?c) (> (distance ?c) 0))
+    
+    :effect (and    (not (on-floor ?c))
+                    (not (free ?m1)) (not (free ?m2))
+                    (hold ?c ?m1) (hold ?c ?m2)
+    )
+)
+
+
+  (:durative-action moving  ; one mover
     :parameters (?c - crate ?m - mover ?l - loader)
     :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
     :condition (and 
-      (at start (hold ?c ?m))
-      (at start (> (distance ?c) 0))
-      (at start (> (weight ?c) 0))
+      (over all (hold ?c ?m))
+      (over all (>= (distance ?c) 0))
+      (at start (<= (weight ?c) 50))
     )
     :effect (and
         (at end (at ?c ?l))
@@ -70,19 +78,56 @@
     )
   )
 
+(:durative-action moving-two-movers-light
+    :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
+    :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 150))
+    :condition (and
+        (at start (<= (weight ?c) 50))
+        (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
+        (over all (> (distance ?c) 0))
+    )
+    :effect (and 
+        (at end (at ?c ?l))
+        (at end (assign (distance ?c) 0))
+    )
+)
 
+(:durative-action moving-two-movers-heavy
+    :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
+    :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
+    :condition (and 
+        (at start (> (weight ?c) 50))
+        (over all (not(= ?m1 ?m2)))
+        (over all (hold ?c ?m1))
+        (over all (hold ?c ?m2))
+        (over all (> (distance ?c) 0))
+    )
+    :effect (and 
+        (at end (at ?c ?l))
+        (at end (assign (distance ?c) 0))
+    )
+)
 
 
   (:action drop
-      :parameters (?c - crate ?m - mover)
-      :precondition (and (= (distance ?c) 0)
+      :parameters (?c - crate ?m1 - mover ?m2 - mover)
+      :precondition (and (= (distance ?c) 0) (hold ?c ?m1) (not (hold ?c ?m2)) (not(= ?m1 ?m2));(not(free ?m))
       )
-      :effect (and (free ?m)
-                    (not (hold ?c ?m))
+      :effect (and (free ?m1)
+                    (not (hold ?c ?m1))
                     (on-floor ?c)
       )
   )
   
+    (:action drop-two-movers
+      :parameters (?c - crate ?m1 - mover ?m2 - mover)
+      :precondition (and (= (distance ?c) 0) (hold ?c ?m1) (hold ?c ?m2) ;(not(= ?m1 ?m2));(not(free ?m))
+      )
+      :effect (and (free ?m1) (free ?m2)
+                    (not (hold ?c ?m1)) (not (hold ?c ?m2))
+                    (on-floor ?c)
+      )
+  )
 
 )
 
