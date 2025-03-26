@@ -1,6 +1,10 @@
 (define (domain warehouse)
 
-(:requirements :strips :fluents :typing :conditional-effects :equality :numeric-fluents :time :duration-inequalities :negative-preconditions)
+(:requirements  :strips :fluents :typing :conditional-effects :equality :numeric-fluents 
+                :time :duration-inequalities 
+                :negative-preconditions :disjunctive-preconditions
+    
+)
 ; :durative-actions :timed-initial-literals
 (:types crate mover loader )
 
@@ -97,10 +101,8 @@
     :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
     :condition (and 
         (at start (> (weight ?c) 50))
-        (over all (not(= ?m1 ?m2)))
-        (over all (hold ?c ?m1))
-        (over all (hold ?c ?m2))
         (over all (> (distance ?c) 0))
+        (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
     )
     :effect (and 
         (at end (at ?c ?l))
@@ -108,22 +110,32 @@
     )
 )
 
+;   (:action drop-all
+;     :parameters (?c - crate)
+;     :precondition (and (= (distance ?c) 0) (exists (?m - mover) (hold ?c ?m)))
+;     :effect (and
+;       (on-floor ?c)
+;       (forall (?m - mover) (when (hold ?c ?m) (and (free ?m) (not (hold ?c ?m)) )))
+;     )
+;   )
+
 
   (:action drop
       :parameters (?c - crate ?m1 - mover ?m2 - mover)
-      :precondition (and (= (distance ?c) 0) (hold ?c ?m1) (not (hold ?c ?m2)) (not(= ?m1 ?m2));(not(free ?m))
+      :precondition (and (= (distance ?c) 0) (hold ?c ?m1) (not (hold ?c ?m2))
       )
       :effect (and (free ?m1)
                     (not (hold ?c ?m1))
-                    (on-floor ?c)
+                    
       )
   )
   
     (:action drop-two-movers
       :parameters (?c - crate ?m1 - mover ?m2 - mover)
-      :precondition (and (= (distance ?c) 0) (hold ?c ?m1) (hold ?c ?m2) ;(not(= ?m1 ?m2));(not(free ?m))
+      :precondition (and (= (distance ?c) 0) (hold ?c ?m1) (hold ?c ?m2) 
+                            (not(= ?m1 ?m2)) ;(not(free ?m1)) (not(free ?m2))
       )
-      :effect (and (free ?m1) (free ?m2)
+      :effect (and  (free ?m1) (free ?m2)
                     (not (hold ?c ?m1)) (not (hold ?c ?m2))
                     (on-floor ?c)
       )
