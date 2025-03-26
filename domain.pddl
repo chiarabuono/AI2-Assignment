@@ -19,6 +19,7 @@
   (hold ?c - crate ?m - mover)
   (loaded ?c - crate)
   (free ?m - mover)
+  (free_loader ?l - loader)
   (at ?c - crate ?l - loader)
   (on-floor ?c - crate) ; negation of hold (more or less)
   ;(at-mover ?m -mover ?l - loader)    ; indicates if the mover is at loader
@@ -51,10 +52,10 @@
     (reached ?m ?c)  ;(= (distance ?c) (distance-ml ?m))
   )
   :effect (and (hold ?c ?m)
-  (not (free ?m))
-  (not(reached ?m ?c))
-  (not (on-floor ?c)) 
-  ;(moving ?c ?m)
+    (not (free ?m))
+    (not(reached ?m ?c))
+    (not (on-floor ?c)) 
+    ;(moving ?c ?m)
   )
 )
 
@@ -97,7 +98,7 @@
         (at end (assign (distance ?c) 0))
         ;(decrease (distance ?c) (/ (* (distance ?c) (weight ?c)) 100))
     )
-
+  )
 
 (:action drop
   :parameters (?c - crate ?m - mover)
