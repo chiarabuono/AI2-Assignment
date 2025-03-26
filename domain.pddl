@@ -1,6 +1,6 @@
 (define (domain warehouse)
 
-(:requirements :strips :negative-preconditions :fluents :typing :conditional-effects :equality :numeric-fluents :time :duration-inequalities :numeric-fluents)
+(:requirements :strips :negative-preconditions :fluents :typing :conditional-effects :equality :numeric-fluents :time :duration-inequalities)
 ; :durative-actions :timed-initial-literals :negative-preconditions 
 (:types crate mover loader )
 
@@ -15,12 +15,13 @@
 ;(:constants )
 
 (:predicates
-  (hold ?c - crate)
+  (hold ?c - crate ?m - mover)
   (loaded ?c - crate)
   (free ?m - mover)
   (at ?c - crate ?l - loader)
   (on-floor ?c - crate) ; negation of hold (more or less)
-  (at-mover ?m -mover ?l - loader)    ; indicates if the mover is at loader
+  ;(at-mover ?m -mover ?l - loader)    ; indicates if the mover is at loader
+  (reached ?m - mover ?c - crate) ; the mover reached the crate
 )
 
 
@@ -41,36 +42,42 @@
   :parameters (?c - crate ?m - mover)
   :precondition (and 
     (free ?m)
-    ;(< (weight ?c) 50)
-    (> (distance ?c) 0)
+    ;(< (weight ?c) 50) 
+    (reached ?m ?c)  ;(= (distance ?c) (distance-ml ?m))
   )
-  :effect (and (hold ?c)
-  (not (free ?m)) 
+  :effect (and (hold ?c ?m)
+  (not (free ?m))
+  (not(reached ?m ?c))
   ;(moving ?c ?m)
   )
 )
 
 
 (:durative-action moving-empty
-  :parameters (?m - mover ?c - crate ?l - loader)
+  :parameters (?m - mover ?c - crate) ; ?l - loader
   :duration (= ?duration (/ (distance ?c) 10))
   :condition (and 
-    (at start (free ?m))
-    (at start (at-mover ?m ?l))
+    (at start  (free ?m))
+    ;(at start (at-mover ?m ?l))
     (at start (> (distance ?c) 0))
   )
   :effect (and
-    (at end (not(at-mover ?m ?l)))
-    (at end (assign (distance-ml ?m) (distance ?c)))
+    (at start (not (free ?m)))
+    ;(at end (not(at-mover ?m ?l)))
+    ;(at end (assign (distance-ml ?m) (distance ?c))) 
+    (at end (reached ?m ?c))
+    (at end (free ?m))
+
   )
 )
+
 
 
 (:durative-action moving
   :parameters (?c - crate ?m - mover ?l - loader)
   :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
   :condition (and 
-    (at start (hold ?c))
+    (at start (hold ?c ?m))
     (at start (> (distance ?c) 0))
     (at start (> (weight ?c) 0))
   )
@@ -87,7 +94,7 @@
   )
   :effect (and 
     (free ?m)
-    (not (hold ?c))
+    (not (hold ?c ?m))
     (on-floor ?c)
   )
 )
