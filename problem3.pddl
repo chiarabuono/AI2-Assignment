@@ -6,6 +6,7 @@
 
 (:init
     (free moverA) (free moverB)
+    (without-target moverA) (without-target moverB)
     (free_loader loaderA)
 
     ; crateA

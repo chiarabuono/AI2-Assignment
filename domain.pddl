@@ -1,7 +1,7 @@
 (define (domain warehouse)
 
 (:requirements :strips :negative-preconditions :fluents :typing :conditional-effects :equality :numeric-fluents :time :duration-inequalities)
-; :durative-actions :timed-initial-literals :negative-preconditions 
+; :durative-actions :timed-initial-literals :negative-preconditions
 (:types crate mover loader )
 
 (:functions
@@ -19,11 +19,11 @@
   (hold ?c - crate ?m - mover)
   (loaded ?c - crate)
   (free ?m - mover)
-  (free_loader ?l - loader)
-  (at ?c - crate ?l - loader)
-  (on-floor ?c - crate) ; negation of hold (more or less)
-  ;(at-mover ?m -mover ?l - loader)    ; indicates if the mover is at loader
+  (free_loader ?l - loader)       ; the loader is free
+  (at ?c - crate ?l - loader)              ; the crate reached the loader
+  (on-floor ?c - crate)           ; the crate is on the floor
   (reached ?m - mover ?c - crate) ; the mover reached the crate
+  (without-target ?m - mover)     ; the mover has not a target
 )
 
 ; loader loads one crate per time
@@ -40,8 +40,6 @@
     )
 )
 
-
-
 ; start - moving
 (:action pick-up
   :parameters (?c - crate ?m - mover)
@@ -55,36 +53,28 @@
     (not (free ?m))
     (not(reached ?m ?c))
     (not (on-floor ?c)) 
-    ;(moving ?c ?m)
   )
 )
 
-
-
-
+; a loader could be moving in the same direction target by another mover
 (:durative-action moving-empty
   :parameters (?m - mover ?c - crate) ; ?l - loader
   :duration (= ?duration (/ (distance ?c) 10))
   :condition (and 
     (at start  (free ?m))
-    ;(at start (at-mover ?m ?l))
+    (at start (without-target ?m))
     (at start (> (distance ?c) 0))
    )
   :effect (and
     (at start (not (free ?m)))
-    ;(at end (not(at-mover ?m ?l)))
-    ;(at end (assign (distance-ml ?m) (distance ?c))) 
+    (at start (not (without-target ?m)))
     (at end (reached ?m ?c))
     (at end (free ?m))
 
   )
 )
 
-   
-
-
-; TO DO - implementing moving such that only the mover that picked up the crate is moving it
-; create a macro = pick-up + moving?
+ 
   (:durative-action moving
     :parameters (?c - crate ?m - mover ?l - loader)
     :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
@@ -102,12 +92,13 @@
 
 (:action drop
   :parameters (?c - crate ?m - mover)
-  :precondition (and (= (distance ?c) 0)
+  :precondition (and (= (distance ?c) 0) (hold ?c ?m)
   )
   :effect (and 
     (free ?m)
     (not (hold ?c ?m))
     (on-floor ?c)
+    (without-target ?m)
   )
 )
 
