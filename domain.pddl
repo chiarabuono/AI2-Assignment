@@ -3,11 +3,11 @@
 (:requirements  :strips :typing :conditional-effects :equality :fluents :numeric-fluents
                 :time :duration-inequalities 
                 :negative-preconditions :disjunctive-preconditions
-    ;:strips :adl :typing :equality :negative-preconditions :disjunctive-preconditions :existential-preconditions :universal-preconditions :quantified-preconditions :conditional-effects :derived-predicates :action-costs
+    ; :durative-actions :timed-initial-literals 
 
 )
-; :durative-actions :timed-initial-literals 
-(:types crate mover loader )
+
+(:types crate mover loader)
 
 (:functions
   (weight ?w - crate) ; weight of the crate
@@ -16,19 +16,16 @@
   (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
   
   (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
-)
+);:strips :adl :typing :equality :negative-preconditions :disjunctive-preconditions :existential-preconditions :universal-preconditions :quantified-preconditions :conditional-effects :derived-predicates :action-costs
 
 
-; un-comment following line if constants are needed
-;(:constants )
 
 (:predicates
     (hold ?c - crate ?m - mover)
     (loaded ?c - crate)
     (free ?m - mover)
     (free_loader ?l - loader)
-    (at ?c - crate ?l - loader)
-    ;(on-floor ?c - crate)      
+    (at ?c - crate ?l - loader)    
 )
 
 ; loader loads one crate per time
@@ -37,10 +34,10 @@
     :duration (= ?duration 4)
     :condition (and 
         (at start (and (at ?c ?l) (free_loader ?l)))
-        (at start (= (carried ?c) 0)) ;(at start (on-floor ?c))
+        (at start (= (carried ?c) 0))
     )
     :effect (and 
-        (at start (and(not (free_loader ?l)) )) ; (not (on-floor ?c))
+        (at start (and(not (free_loader ?l)) ))
         (at end (and (free_loader ?l) (loaded ?c)))
     )
 )
@@ -49,37 +46,21 @@
 (:action pick-up
     :parameters (?c - crate ?m - mover)
     :precondition (and  (free ?m)
-                        (= (carried ?c) 0) ;(on-floor ?c)
+                        (= (carried ?c) 0)
                         (< (weight ?c) 50) 
                         (> (distance ?c) 0)
     )
-    :effect (and (hold ?c ?m)
-    (not (free ?m))
-    (assign (carried ?c) 1)
-    ;(not (on-floor ?c)) 
+    :effect (and    (hold ?c ?m) (not (free ?m))
+                    (assign (carried ?c) 1)
     )
 )
-
-; (:action pick-up-again
-;     :parameters (?c - crate ?m - mover)
-;     :precondition (and  (free ?m)
-;                         (= (carried ?c) 1)
-;                         (< (weight ?c) 50) 
-;                         (> (distance ?c) 0)
-;     )
-;     :effect (and (hold ?c ?m)
-;     (not (free ?m))
-;     (assign (carried ?c) 2)
-;     ;(not (on-floor ?c)) 
-;     )
-; )
 
 (:action pick-up-two-movers
     :parameters (?c - crate ?m1 - mover ?m2 - mover)
     :precondition (and  (free ?m1) (free ?m2) 
-                        (= (carried ?c) 0) (> (distance ?c) 0)) ;(on-floor ?c) 
+                        (= (carried ?c) 0) (> (distance ?c) 0))
     
-    :effect (and    (assign (carried ?c) 2) ;(not (on-floor ?c))
+    :effect (and    (assign (carried ?c) 2)
                     (not (free ?m1)) (not (free ?m2))
                     (hold ?c ?m1) (hold ?c ?m2)
     )
@@ -92,7 +73,7 @@
     :condition (and 
       (over all (hold ?c ?m))
       (over all (>= (distance ?c) 0))
-      ;(at start (<= (weight ?c) 50))
+      (at start (<= (weight ?c) 50))
       (at start (= (carried ?c) 1))
     )
     :effect (and
@@ -145,18 +126,6 @@
       )
   )
 
-    (:action drop-again
-      :parameters (?c - crate ?m - mover)
-      :precondition (and  (= (distance ?c) 0) 
-                          (hold ?c ?m)
-                          (= (carried ?c) 2)
-      )
-      :effect (and  (free ?m)
-                    (not (hold ?c ?m))
-                    (assign (carried ?c) 1)
-                    
-      )
-  )
   
     (:action drop-two-movers
       :parameters (?c - crate ?m1 - mover ?m2 - mover)
@@ -166,7 +135,7 @@
       )
       :effect (and  (free ?m1) (free ?m2)
                     (not (hold ?c ?m1)) (not (hold ?c ?m2))
-                    (assign (carried ?c) 0) ;(on-floor ?c)
+                    (assign (carried ?c) 0)
       )
   )
 
