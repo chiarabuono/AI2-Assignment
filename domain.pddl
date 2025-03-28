@@ -1,11 +1,12 @@
 (define (domain warehouse)
 
-(:requirements  :strips :fluents :typing :conditional-effects :equality :numeric-fluents 
+(:requirements  :strips :typing :conditional-effects :equality :fluents :numeric-fluents
                 :time :duration-inequalities 
                 :negative-preconditions :disjunctive-preconditions
-    
+    ;:strips :adl :typing :equality :negative-preconditions :disjunctive-preconditions :existential-preconditions :universal-preconditions :quantified-preconditions :conditional-effects :derived-predicates :action-costs
+
 )
-; :durative-actions :timed-initial-literals
+; :durative-actions :timed-initial-literals 
 (:types crate mover loader )
 
 (:functions
@@ -48,17 +49,30 @@
 (:action pick-up
     :parameters (?c - crate ?m - mover)
     :precondition (and  (free ?m)
-                        (or (= (carried ?c) 0) (= (carried ?c) 1)) ;(on-floor ?c)
+                        (= (carried ?c) 0) ;(on-floor ?c)
                         (< (weight ?c) 50) 
                         (> (distance ?c) 0)
     )
     :effect (and (hold ?c ?m)
     (not (free ?m))
-    (when (= (carried ?c) 0) (assign (carried ?c) 1))
-    (when (= (carried ?c) 1) (assign (carried ?c) 2))
+    (assign (carried ?c) 1)
     ;(not (on-floor ?c)) 
     )
 )
+
+; (:action pick-up-again
+;     :parameters (?c - crate ?m - mover)
+;     :precondition (and  (free ?m)
+;                         (= (carried ?c) 1)
+;                         (< (weight ?c) 50) 
+;                         (> (distance ?c) 0)
+;     )
+;     :effect (and (hold ?c ?m)
+;     (not (free ?m))
+;     (assign (carried ?c) 2)
+;     ;(not (on-floor ?c)) 
+;     )
+; )
 
 (:action pick-up-two-movers
     :parameters (?c - crate ?m1 - mover ?m2 - mover)
@@ -123,13 +137,23 @@
       :precondition (and  (= (distance ?c) 0) 
                           (hold ?c ?m)
                           (= (carried ?c) 1)
-                          (or (= (carried ?c) 1) (= (carried ?c) 2))
       )
       :effect (and  (free ?m)
                     (not (hold ?c ?m))
                     (assign (carried ?c) 0)
-                    (when (= (carried ?c) 2) (assign (carried ?c) 1))
-                    (when (= (carried ?c) 1) (assign (carried ?c) 0))
+                    
+      )
+  )
+
+    (:action drop-again
+      :parameters (?c - crate ?m - mover)
+      :precondition (and  (= (distance ?c) 0) 
+                          (hold ?c ?m)
+                          (= (carried ?c) 2)
+      )
+      :effect (and  (free ?m)
+                    (not (hold ?c ?m))
+                    (assign (carried ?c) 1)
                     
       )
   )
