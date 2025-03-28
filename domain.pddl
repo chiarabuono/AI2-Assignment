@@ -7,6 +7,8 @@
 
 )
 
+(:types crate mover loader )
+
 (:functions
   (weight ?w - crate) ; weight of the crate
   (distance ?d - crate) ; distance of the crate from loading bay
@@ -58,8 +60,10 @@
 (:action pick-up-two-movers
     :parameters (?c - crate ?m1 - mover ?m2 - mover)
     :precondition (and  (free ?m1) (free ?m2) 
-                        (= (carried ?c) 0) (> (distance ?c) 0))
-    
+                        (= (carried ?c) 0) (> (distance ?c) 0)
+                        (reached ?m1 ?c) (reached ?m2 ?c)
+                        )
+                        
     :effect (and    (assign (carried ?c) 2)
                     (not (free ?m1)) (not (free ?m2))
                     (hold ?c ?m1) (hold ?c ?m2)
