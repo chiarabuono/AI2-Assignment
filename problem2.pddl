@@ -14,7 +14,7 @@
     (= (distance crateA) 10)
     (= (fragile crateA)0)
     (= (group crateA) 1)
-    (on-floor crateA)
+    (= (carried crateA) 0)
 
 
     ; crateB
@@ -22,21 +22,21 @@
     (= (distance crateB) 20)
     (= (fragile crateB)1)
     (= (group crateB) 1)
-    (on-floor crateB)
+    (= (carried crateB) 0)
 
     ; crateC
     (= (weight crateC) 20)
     (= (distance crateC) 20)
     (= (fragile crateC)0)
     (= (group crateC) 2)
-    (on-floor crateC)
+    (= (carried crateC) 0)
 
     ; crateD
     (= (weight crateD) 30)
     (= (distance crateD) 10)
     (= (fragile crateD)0)
     (= (group crateD) 2)
-    (on-floor crateD)
+    (= (carried crateD) 0)
 
 )
 

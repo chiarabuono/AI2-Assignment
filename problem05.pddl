@@ -14,7 +14,7 @@
     (= (distance crateA) 10)
     (= (fragile crateA) 0)
     (= (group crateA) 0)
-    (on-floor crateA)
+    (= (carried crateA) 0)
 
 
     ; crateB
@@ -22,7 +22,7 @@
     (= (distance crateB) 20)
     (= (fragile crateB) 0)
     (= (group crateB) 1)
-    (on-floor crateB)
+    (= (carried crateB) 0)
 )
 
 (:goal (and
