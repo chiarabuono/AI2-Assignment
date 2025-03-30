@@ -62,6 +62,7 @@
         :precondition (and  
             (free ?m1) (free ?m2) 
             (= (carried ?c) 0) (> (distance ?c) 0)
+            (reached ?m1 ?c) (reached ?m2 ?c)
         )
         :effect (and    
             (assign (carried ?c) 2)
