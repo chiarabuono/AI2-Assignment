@@ -49,7 +49,7 @@
             (free ?m)
             (= (carried ?c) 0)
             (< (weight ?c) 50) 
-            (reached ?m ?c)
+            (reached ?m ?c) (> (distance ?c) 0)
         )
         :effect (and    
             (hold ?c ?m) (not (free ?m))
@@ -160,6 +160,7 @@
             (free ?m1) (free ?m2)
             (not (hold ?c ?m1)) (not (hold ?c ?m2))
             (assign (carried ?c) 0)
+            (without-target ?m1) (without-target ?m2)
         )
     )
 )
