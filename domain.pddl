@@ -35,6 +35,21 @@
         :condition (and 
             (at start (and (at ?c ?l) (free_loader ?l)))
             (at start (= (carried ?c) 0))
+            (at start (=(fragile ?c) 0))
+        )
+        :effect (and 
+            (at start (and(not (free_loader ?l)) ))
+            (at end (and (free_loader ?l) (loaded ?c)))
+        )
+    )
+
+    (:durative-action load-fragile
+        :parameters (?c - crate ?l - loader)
+        :duration (= ?duration 6)
+        :condition (and 
+            (at start (and (at ?c ?l) (free_loader ?l)))
+            (at start (= (carried ?c) 0))
+            (at start (= (fragile ?c) 1))
         )
         :effect (and 
             (at start (and(not (free_loader ?l)) ))
@@ -50,6 +65,7 @@
             (= (carried ?c) 0)
             (< (weight ?c) 50) 
             (reached ?m ?c) (> (distance ?c) 0)
+            (= (fragile ?c) 0)
         )
         :effect (and    
             (hold ?c ?m) (not (free ?m))
