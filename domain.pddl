@@ -1,7 +1,7 @@
 (define 
     (domain warehouse)
     (:requirements  :strips :typing :conditional-effects :equality :fluents :numeric-fluents
-                    :time :duration-inequalities 
+                    :time :duration-inequalities :negative-preconditions
         ; :durative-actions :timed-initial-literals :negative-preconditions :disjunctive-preconditions
     )
     (:types 
@@ -16,14 +16,14 @@
         (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
         (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
         (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
+        (at-loading-bay ?c - crate)
     )
 
     (:predicates
         (hold ?c - crate ?m - mover)
         (loaded ?c - crate)
         (free ?m - mover)
-        (free_loader ?l - loader)
-        (at ?c - crate ?l - loader)    
+        (free_loader ?l - loader)  
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
     )
@@ -33,12 +33,12 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (and (at ?c ?l) (free_loader ?l)))
+            (at start (and (= (at-loading-bay ?c) 1) (free_loader ?l)))
             (at start (= (carried ?c) 0))
-            (at start (=(fragile ?c) 0))
+            (at start (= (fragile ?c) 0))
         )
         :effect (and 
-            (at start (and(not (free_loader ?l)) ))
+            (at start (and (not (free_loader ?l))))
             (at end (and (free_loader ?l) (loaded ?c)))
         )
     )
@@ -47,12 +47,12 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 6)
         :condition (and 
-            (at start (and (at ?c ?l) (free_loader ?l)))
+            (at start (and (= (at-loading-bay ?c) 1) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (fragile ?c) 1))
         )
         :effect (and 
-            (at start (and(not (free_loader ?l)) ))
+            (at start (and(not (free_loader ?l))))
             (at end (and (free_loader ?l) (loaded ?c)))
         )
     )
@@ -64,26 +64,34 @@
             (free ?m)
             (= (carried ?c) 0)
             (< (weight ?c) 50) 
-            (reached ?m ?c) (> (distance ?c) 0)
+            (reached ?m ?c) 
+            (= (at-loading-bay ?c) 0)
             (= (fragile ?c) 0)
         )
         :effect (and    
-            (hold ?c ?m) (not (free ?m))
-            (not(reached ?m ?c)) (assign (carried ?c) 1)
+            (hold ?c ?m) 
+            (not (free ?m))
+            (not(reached ?m ?c)) 
+            (assign (carried ?c) 1)
         )
     )
 
     (:action pick-up-two-movers
         :parameters (?c - crate ?m1 - mover ?m2 - mover)
         :precondition (and  
-            (free ?m1) (free ?m2) 
-            (= (carried ?c) 0) (> (distance ?c) 0)
-            (reached ?m1 ?c) (reached ?m2 ?c)
+            (free ?m1) 
+            (free ?m2) 
+            (= (carried ?c) 0) 
+            (= (at-loading-bay ?c) 0)
+            (reached ?m1 ?c) 
+            (reached ?m2 ?c)
         )
         :effect (and    
             (assign (carried ?c) 2)
-            (not (free ?m1)) (not (free ?m2))
-            (hold ?c ?m1) (hold ?c ?m2)
+            (not (free ?m1)) 
+            (not (free ?m2))
+            (hold ?c ?m1) 
+            (hold ?c ?m2)
         )
     )
 
@@ -94,7 +102,7 @@
         :condition (and 
             (at start  (free ?m))
             (at start (without-target ?m))
-            (at start (> (distance ?c) 0))
+            (at start (= (at-loading-bay ?c) 0))
         )
         :effect (and
             (at start (not (free ?m)))
@@ -109,12 +117,12 @@
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
             (over all (hold ?c ?m))
-            (over all (>= (distance ?c) 0))
+            (at start (= (at-loading-bay ?c) 0))
             (at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 1))
         )
         :effect (and
-            (at end (at ?c ?l))
+            (at end (assign (at-loading-bay ?c) 1))
             (at end (assign (distance ?c) 0))
             ;(decrease (distance ?c) (/ (* (distance ?c) (weight ?c)) 100))
         )
@@ -127,10 +135,10 @@
             (at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
-            (over all (> (distance ?c) 0))
+            (at start (= (at-loading-bay ?c) 0))
         )
         :effect (and 
-            (at end (at ?c ?l))
+            (at end (assign (at-loading-bay ?c) 1))
             (at end (assign (distance ?c) 0))
         )
     )
@@ -140,12 +148,12 @@
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
             (at start (> (weight ?c) 50))
-            (over all (> (distance ?c) 0))
+            (at start (= (at-loading-bay ?c) 0))
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
         )
         :effect (and 
-            (at end (at ?c ?l))
+            (at end (assign (at-loading-bay ?c) 1))
             (at end (assign (distance ?c) 0))
         )
     )
@@ -168,17 +176,20 @@
     (:action drop-two-movers
         :parameters (?c - crate ?m1 - mover ?m2 - mover)
         :precondition (and 
-            (= (distance ?c) 0) (hold ?c ?m1) (hold ?c ?m2) 
+            (= (distance ?c) 0) 
+            (hold ?c ?m1) 
+            (hold ?c ?m2) 
             (not(= ?m1 ?m2)) ;(not(free ?m1)) (not(free ?m2))
             (= (carried ?c) 2)
         )
         :effect (and  
-            (free ?m1) (free ?m2)
-            (not (hold ?c ?m1)) (not (hold ?c ?m2))
+            (free ?m1) 
+            (free ?m2)
+            (not (hold ?c ?m1)) 
+            (not (hold ?c ?m2))
             (assign (carried ?c) 0)
-            (without-target ?m1) (without-target ?m2)
+            (without-target ?m1) 
+            (without-target ?m2)
         )
     )
 )
-
-
