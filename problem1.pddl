@@ -11,6 +11,9 @@
         (free moverA) (free moverB)
         (without-target moverA) (without-target moverB)
         (free_loader loaderA)
+        (= (last_loaded_group) 0) ; Initialize with no group loaded
+        (= (groupAmembers) 2)  
+        (= (groupBmembers) 0)
         
         ; crateA
         (= (weight crateA) 70)

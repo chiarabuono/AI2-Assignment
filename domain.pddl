@@ -1,7 +1,7 @@
 (define 
     (domain warehouse)
     (:requirements  :strips :typing :conditional-effects :equality :fluents :numeric-fluents
-                    :time :duration-inequalities 
+                    :time :duration-inequalities :disjunctive-preconditions
         ; :durative-actions :timed-initial-literals :negative-preconditions :disjunctive-preconditions
     )
     (:types 
@@ -16,6 +16,9 @@
         (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
         (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
         (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
+        (last_loaded_group)
+        (groupAmembers)
+        (groupBmembers)
     )
 
     (:predicates
@@ -26,6 +29,7 @@
         (at ?c - crate ?l - loader)    
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
+        (taken ?c - crate ?l - loader)
     )
 
     ; loader loads one crate per time
@@ -33,13 +37,29 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (and (at ?c ?l) (free_loader ?l)))
-            (at start (= (carried ?c) 0))
             (at start (=(fragile ?c) 0))
+            (at start (taken ?c ?l))
         )
         :effect (and 
+            (at end (not(taken ?c ?l)))
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
+        )
+     )
+    (:action pick_up_loader
+        :parameters (?l - loader ?c - crate)
+        :precondition (and
+            (and (at ?c ?l) (free_loader ?l))
+            (= (carried ?c) 0)
+            (or (= (last_loaded_group) 0)(=(group ?c) last_loaded_group))
+        )
+        :effect (and
+            (taken ?c ?l)
+            (assign (last_loaded_group) (group ?c))
+            (when (= (group ?c) 1)(decrease (groupAmembers)1))
+            (when (= (groupAmembers) 0)(assign (last_loaded_group) 0))
+            (when (= (group ?c) 2)(decrease (groupBmembers)1))
+            (when (= (groupBmembers) 0)(assign (last_loaded_group) 0))
         )
     )
 
@@ -47,11 +67,12 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 6)
         :condition (and 
-            (at start (and (at ?c ?l) (free_loader ?l)))
-            (at start (= (carried ?c) 0))
             (at start (= (fragile ?c) 1))
+            (at start (taken ?c ?l))
+
         )
         :effect (and 
+            (at end (not(taken ?c ?l)))
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
         )
@@ -151,7 +172,7 @@
     )
 
     (:action drop
-        :parameters (?c - crate ?m - mover)
+        :parameters (?c - crate ?m - mover) 
         :precondition (and  
             (= (distance ?c) 0) 
             (hold ?c ?m)
