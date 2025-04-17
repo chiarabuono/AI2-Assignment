@@ -7,24 +7,24 @@
     (:types 
         crate 
         mover 
-        loader
+        loader 
     )
 
     (:functions
-        (weight ?w) ; weight of the crate
-        (distance ?d) ; distance of the crate from loading bay
-        (fragile ?f) ; 0 for not fragile, 1 for fragile
-        (group ?g) ; 0 for no group, 1 for group A, 2 for group B
-        (carried ?c) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
-        (at-loading-bay ?c)
-        (arm ?l)
+        (weight ?w - crate) ; weight of the crate
+        (distance ?d - crate) ; distance of the crate from loading bay
+        (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
+        (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
+        (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
+        (at-loading-bay ?c - crate) ; TODO : mettilo come predicato
+        (arm ?a - loader)
     )
 
     (:predicates
         (hold ?c - crate ?m - mover)
-        (loaded ?c - crate)
+        (loaded ?c - crate) 
         (free ?m - mover)
-        (free_loader ?l - loader)
+        (free_loader ?l - loader)  
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
     )
@@ -34,36 +34,30 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 4)
         :condition (and 
-            (over all (= (arm ?l) 0))
-            (at start (= (at-loading-bay ?c) 1))
-            (at start (free_loader ?l))
+            (at start (= (arm ?l) 0))
+            (at start (and (= (at-loading-bay ?c) 1) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (fragile ?c) 0))
         )
         :effect (and 
-            (at start (not (free_loader ?l)))
-            (at end (free_loader ?l))
-            (at end (loaded ?c))
+            (at start (and (not (free_loader ?l))))
+            (at end (and (free_loader ?l) (loaded ?c)))
         )
     )
 
     (:durative-action load-arm
-        :parameters (?c - crate ?l - loader ?a - loader)
+        :parameters (?c - crate ?l - loader)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (free_loader ?a))
-            (at start (not (free_loader ?l)))
-            (at start (not (= ?l ?a)))
-            (over all (= (arm ?a) 1))
-            (over all (= (arm ?l) 0))
-            (at start (= (at-loading-bay ?c) 1))
+            (at start (= (arm ?l) 1))
+            (at start (and (= (at-loading-bay ?c) 1) (free_loader ?l)))
             (at start (= (carried ?c) 0))
-            (over all (< (weight ?c) 50))
+            (at start (= (fragile ?c) 0))
+            (at start (< (weight ?c) 50))
         )
         :effect (and 
-            (at start (not (free_loader ?a)))
-            (at end (free_loader ?a))
-            (at end (loaded ?c))
+            (at start (and (not (free_loader ?l))))
+            (at end (and (free_loader ?l) (loaded ?c)))
         )
     )
 
@@ -71,35 +65,30 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 6)
         :condition (and 
-            (over all (= (arm ?l) 0))
-            (at start (free_loader ?l))
-            (at start (= (at-loading-bay ?c) 1))
+            (at start (= (arm ?l) 0)) 
+            (at start (and (= (at-loading-bay ?c) 1) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (fragile ?c) 1))
         )
         :effect (and 
-            (at start (not (free_loader ?l)))
-            (at end (free_loader ?l))
-            (at end (loaded ?c))
+            (at start (and(not (free_loader ?l))))
+            (at end (and (free_loader ?l) (loaded ?c)))
         )
     )
-    (:durative-action load-fragile-arm
-        :parameters (?c - crate ?a - loader ?l - loader)
+
+     (:durative-action load-arm-fragile
+        :parameters (?c - crate ?l - loader)
         :duration (= ?duration 6)
         :condition (and 
-            (at start (not (free_loader ?l)))
-            (at start (free_loader ?a))
-            (at start (not (= ?l ?a)))
-            (over all (= (arm ?a) 1))
-            (over all (= (arm ?l) 0))
-            (at start (= (at-loading-bay ?c) 1))
+            (at start (= (arm ?l) 1)) 
+            (at start (and (= (at-loading-bay ?c) 1) (free_loader ?l)))
             (at start (= (carried ?c) 0))
-            (over all (< (weight ?c) 50))
+            (at start (= (fragile ?c) 1))
+            (at start (< (weight ?c) 50))
         )
         :effect (and 
-            (at start (not (free_loader ?a)))
-            (at end (free_loader ?a))
-            (at end (loaded ?c))
+            (at start (and(not (free_loader ?l))))
+            (at end (and (free_loader ?l) (loaded ?c)))
         )
     )
 
@@ -149,7 +138,6 @@
             (at start  (free ?m))
             (at start (without-target ?m))
             (at start (= (at-loading-bay ?c) 0))
-            (at start (not (reached ?m ?c)))
         )
         :effect (and
             (at start (not (free ?m)))
@@ -160,7 +148,7 @@
     )
     
     (:durative-action moving
-        :parameters (?c - crate ?m - mover)
+        :parameters (?c - crate ?m - mover ?l - loader)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
             (over all (hold ?c ?m))
@@ -176,14 +164,12 @@
     )
 
     (:durative-action moving-two-movers-light
-        :parameters (?c - crate ?m1 - mover ?m2 - mover)
+        :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 150))
         :condition (and
             (at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 2))
-            (over all (hold ?c ?m1))
-            (over all (not(= ?m1 ?m2)))
-            (over all (hold ?c ?m2))
+            (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
             (at start (= (at-loading-bay ?c) 0))
         )
         :effect (and 
@@ -193,15 +179,13 @@
     )
 
     (:durative-action moving-two-movers-heavy
-        :parameters (?c - crate ?m1 - mover ?m2 - mover)
+        :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
             (at start (> (weight ?c) 50))
             (at start (= (at-loading-bay ?c) 0))
             (at start (= (carried ?c) 2))
-            (over all (hold ?c ?m1))
-            (over all (not(= ?m1 ?m2)))
-            (over all (hold ?c ?m2))
+            (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
         )
         :effect (and 
             (at end (assign (at-loading-bay ?c) 1))
@@ -210,13 +194,14 @@
     )
 
     (:action drop
-        :parameters (?c - crate ?m - mover ?l -loader ?a -loader)
+        :parameters (?c - crate ?m - mover ?l1 - loader ?l2 - loader)
         :precondition (and  
             (= (distance ?c) 0) 
             (hold ?c ?m)
             (= (carried ?c) 1)
-            (free_loader ?l) 
-            (free_loader ?a)
+            (free_loader ?l1)
+            (free_loader ?l2)
+            (not(= ?l1 ?l2))
         )
         :effect (and  
             (free ?m)
@@ -227,15 +212,16 @@
     )
     
     (:action drop-two-movers
-        :parameters (?c - crate ?m1 - mover ?m2 - mover ?l -loader ?a - loader)
+        :parameters (?c - crate ?m1 - mover ?m2 - mover ?l1 - loader ?l2 - loader)
         :precondition (and 
             (= (distance ?c) 0) 
             (hold ?c ?m1) 
             (hold ?c ?m2) 
             (not(= ?m1 ?m2)) ;(not(free ?m1)) (not(free ?m2))
             (= (carried ?c) 2)
-            (free_loader ?l) 
-            (free_loader ?a)
+            (free_loader ?l1)
+            (free_loader ?l2)
+            (not(= ?l1 ?l2))
         )
         :effect (and  
             (free ?m1) 

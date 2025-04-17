@@ -4,18 +4,18 @@
     (:objects 
         crateA crateB crateC crateD - crate
         moverA moverB - mover
-        loaderA armA - loader
+        loaderA loaderB - loader
     )
 
     (:init
         (free moverA) (free moverB)
         (without-target moverA) (without-target moverB)
-        (free_loader loaderA) (free_loader armA)
-        
-        ; caracterizing the arm and the loader
-        (= (arm loaderA) 0)
-        (= (arm armA) 1)
+        (free_loader loaderA) (free_loader loaderB)
 
+        ; loader
+        (= (arm loaderA) 0)
+        (= (arm loaderB) 1)
+        
         ; crateA
         (= (weight crateA) 70)
         (= (distance crateA) 20)
@@ -23,7 +23,6 @@
         (= (group crateA) 1)
         (= (carried crateA) 0)
         (= (at-loading-bay crateA) 0)
-
 
         ; crateB
         (= (weight crateB) 80)
