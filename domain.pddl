@@ -23,7 +23,7 @@
         (loaded ?c - crate)
         (free ?m - mover)
         (free_loader ?l - loader)
-        (at ?c - crate ?l - loader)    
+        (at_loading_bay ?c - crate)    
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
     )
@@ -33,7 +33,7 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (and (at ?c ?l) (free_loader ?l)))
+            (at start (and (at_loading_bay ?c) (free_loader ?l)))
             (at start (= (carried ?c) 0))
         )
         :effect (and 
@@ -98,7 +98,7 @@
             (at start (= (carried ?c) 1))
         )
         :effect (and
-            (at end (at ?c ?l))
+            (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
             ;(decrease (distance ?c) (/ (* (distance ?c) (weight ?c)) 100))
         )
@@ -114,7 +114,7 @@
             (over all (> (distance ?c) 0))
         )
         :effect (and 
-            (at end (at ?c ?l))
+            (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
         )
     )
@@ -129,17 +129,18 @@
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
         )
         :effect (and 
-            (at end (at ?c ?l))
+            (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
         )
     )
 
     (:action drop
-        :parameters (?c - crate ?m - mover)
+        :parameters (?c - crate ?m - mover ?l - loader)
         :precondition (and  
             (= (distance ?c) 0) 
             (hold ?c ?m)
             (= (carried ?c) 1)
+            (free_loader ?l)
         )
         :effect (and  
             (free ?m)
@@ -150,11 +151,12 @@
     )
     
     (:action drop-two-movers
-        :parameters (?c - crate ?m1 - mover ?m2 - mover)
+        :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
         :precondition (and 
             (= (distance ?c) 0) (hold ?c ?m1) (hold ?c ?m2) 
             (not(= ?m1 ?m2)) ;(not(free ?m1)) (not(free ?m2))
             (= (carried ?c) 2)
+            (free_loader ?l)
         )
         :effect (and  
             (free ?m1) (free ?m2)
