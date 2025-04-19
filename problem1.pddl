@@ -5,12 +5,21 @@
         crateA crateB crateC - crate
         moverA moverB - mover
         loaderA - loader
+        group0 groupA - groupClass
     )
 
     (:init
         (free moverA) (free moverB)
         (without-target moverA) (without-target moverB)
         (free_loader loaderA)
+
+        ; group
+        (= (active-group) 0)
+        (= (groupMember group0) 1)
+        (= (groupMember groupA) 2)
+
+        (= (groupId group0) 0)
+        (= (groupId groupA) 1)
         
         ; crateA
         (= (weight crateA) 70)

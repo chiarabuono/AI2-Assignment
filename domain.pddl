@@ -8,6 +8,7 @@
         crate 
         mover 
         loader 
+        groupClass
     )
 
     (:functions
@@ -16,6 +17,9 @@
         (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
         (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
         (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
+        (groupMember ?m - groupClass) ; number of crate per group
+        (groupId ?g - groupClass)
+        (active-group)
     )
 
     (:predicates
@@ -26,19 +30,66 @@
         (at_loading_bay ?c - crate)    
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
+        
+        ;(active-group ?g - groupClass)
     )
 
+    (:action choose_group
+        :parameters (?g - groupClass)
+        :precondition (and 
+            (> (groupMember ?g) 0)
+            (= (active-group) 0)
+        )
+        :effect (and 
+            (assign (active-group) (groupId ?g))
+        )
+    )
+
+    (:action reset_group
+        :parameters (?g - groupClass)
+        :precondition (and 
+            (= (groupMember ?g) 0)
+            (= (active-group) (groupId ?g))
+        )
+        :effect (and 
+            (assign (active-group) 0)
+        )
+    )
+    
+    
+
     ; loader loads one crate per time
-    (:durative-action load
-        :parameters (?c - crate ?l - loader)
+    (:durative-action load-group
+        :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 4)
         :condition (and 
             (at start (and (at_loading_bay ?c) (free_loader ?l)))
             (at start (= (carried ?c) 0))
+            (at start (= (group ?c) active-group))
+            (at start (= (groupId ?g) active-group))
+            (at start (> (group ?c) 0))
         )
         :effect (and 
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
+            (at end (decrease (groupMember ?g) 1))
+            (at end (not (at_loading_bay ?c)))
+        )
+    )
+
+    (:durative-action load
+        :parameters (?c - crate ?l - loader ?g - groupClass)
+        :duration (= ?duration 4)
+        :condition (and 
+            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (= (carried ?c) 0))
+            (at start (= (group ?c) 0))
+            (at start (= (group ?c) active-group))
+        )
+        :effect (and 
+            (at start (and(not (free_loader ?l)) ))
+            (at end (and (free_loader ?l) (loaded ?c)))
+            (at end (not (at_loading_bay ?c)))
         )
     )
 
