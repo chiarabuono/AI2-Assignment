@@ -140,7 +140,7 @@
     )
     
     (:durative-action moving
-        :parameters (?c - crate ?m - mover ?l - loader)
+        :parameters (?c - crate ?m - mover)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
             (over all (hold ?c ?m))
@@ -156,7 +156,7 @@
     )
 
     (:durative-action moving-two-movers-light
-        :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
+        :parameters (?c - crate ?m1 - mover ?m2 - mover)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 150))
         :condition (and
             (at start (<= (weight ?c) 50))
@@ -205,7 +205,7 @@
         :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
         :precondition (and 
             (= (distance ?c) 0) (hold ?c ?m1) (hold ?c ?m2) 
-            (not(= ?m1 ?m2)) ;(not(free ?m1)) (not(free ?m2))
+            (not(= ?m1 ?m2))
             (= (carried ?c) 2)
             (free_loader ?l)
         )
