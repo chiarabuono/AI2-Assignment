@@ -12,14 +12,22 @@
     )
 
     (:functions
+        ; crate
         (weight ?w - crate) ; weight of the crate
         (distance ?d - crate) ; distance of the crate from loading bay
         (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
         (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
         (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
+        
+        ; group and loader
         (groupMember ?m - groupClass) ; number of crate per group
         (groupId ?g - groupClass)
         (active-group)
+
+        ; mover
+        (battery ?m - mover) 
+        (distMover ?m - mover) ; distance of the mover from the loading bay
+        (remaining-charge-time ?m - mover)
     )
 
     (:predicates
@@ -30,8 +38,7 @@
         (at_loading_bay ?c - crate)    
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
-        
-        ;(active-group ?g - groupClass)
+
     )
 
     (:action choose_group
@@ -122,23 +129,45 @@
         )
     )
 
-    ; a loader could be moving in the same direction target by another mover
-    (:durative-action moving-empty
-        :parameters (?m - mover ?c - crate) ; ?l - loader
-        :duration (= ?duration (/ (distance ?c) 10))
+    (:durative-action recharge
+        :parameters (?m - mover)
+        :duration (= ?duration 1)
         :condition (and 
-            (at start  (free ?m))
-            (at start (without-target ?m))
-            (at start (> (distance ?c) 0))
+            (at start (and (= (distMover ?m) 0)
+            ))
+
         )
-        :effect (and
-            (at start (not (free ?m)))
-            (at start (not (without-target ?m)))
-            (at end (reached ?m ?c))
-            (at end (free ?m))
+        :effect (and 
+            ;(at end (and (assign (battery ?m) 20)
+            (at end (and (increase (battery ?m) 1)
+            ))
         )
     )
     
+
+
+    
+(:durative-action moving-empty
+    :parameters (?m - mover ?c - crate)
+    :duration (= ?duration (/ (distance ?c) 10))
+    :condition (and
+        (at start (free ?m))
+        (at start (without-target ?m))
+        (at start (> (distance ?c) 0))
+        (at start (>= (battery ?m) 20 ; #TODO: change it to the actual value
+            ;(+ (/ (distance ?c) 10) (* (distance ?c) (weight ?c)))
+        ))
+    )
+    :effect (and
+        (at start (not (free ?m)))
+        (at start (not (without-target ?m)))
+        (at end (reached ?m ?c))
+        (at end (free ?m))
+        (at end (decrease (battery ?m) (/ (distance ?c) 10)))
+        (at end (assign (distMover ?m) (distance ?c)))
+    )
+)
+
     (:durative-action moving
         :parameters (?c - crate ?m - mover)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
@@ -147,10 +176,12 @@
             (over all (>= (distance ?c) 0))
             (at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 1))
+            (at start (> (battery ?m) 0))
         )
         :effect (and
             (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
+            (at end (decrease (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
             ;(decrease (distance ?c) (/ (* (distance ?c) (weight ?c)) 100))
         )
     )
@@ -163,10 +194,14 @@
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
             (over all (> (distance ?c) 0))
+            (at start (> (battery ?m1) 0))
+            (at start (> (battery ?m2) 0))
         )
         :effect (and 
             (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
+            (at end (decrease (battery ?m1) (/ (* (distance ?c) (weight ?c)) 150)))
+            (at end (decrease (battery ?m2) (/ (* (distance ?c) (weight ?c)) 150)))
         )
     )
 
@@ -178,10 +213,14 @@
             (over all (> (distance ?c) 0))
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
+            (at start (> (battery ?m1) 0))
+            (at start (> (battery ?m2) 0))
         )
         :effect (and 
             (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
+            (at end (decrease (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
+            (at end (decrease (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))
         )
     )
 
@@ -197,7 +236,8 @@
             (free ?m)
             (not (hold ?c ?m))
             (assign (carried ?c) 0)
-            (without-target ?m)      
+            (without-target ?m)
+            (assign (distMover ?m) 0)     
         )
     )
     
@@ -214,6 +254,8 @@
             (not (hold ?c ?m1)) (not (hold ?c ?m2))
             (assign (carried ?c) 0)
             (without-target ?m1) (without-target ?m2)
+            (assign (distMover ?m1) 0)
+            (assign (distMover ?m2) 0)
         )
     )
 )

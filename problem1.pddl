@@ -13,6 +13,13 @@
         (without-target moverA) (without-target moverB)
         (free_loader loaderA)
 
+        (= (battery moverA) 20)
+        (= (battery moverB) 20)
+        (= (distMover moverA) 0)
+        (= (distMover moverB) 0)
+        ;(= (remaining-charge-time moverA) 0)
+        ;(= (remaining-charge-time moverB) 0)
+
         ; group
         (= (active-group) 0)
         (= (groupMember group0) 1)

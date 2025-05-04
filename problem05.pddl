@@ -12,6 +12,11 @@
         (free moverA) (free moverB)
         (without-target moverA) (without-target moverB)
         (free_loader loaderA)
+    
+        (= (battery moverA) 20)
+        (= (battery moverB) 20)
+        (= (distMover moverA) 0)
+        (= (distMover moverB) 0)
 
         ; group
         (= (active-group) 0)
