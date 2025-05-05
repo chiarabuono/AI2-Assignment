@@ -27,7 +27,7 @@
         ; mover
         (battery ?m - mover) 
         (distMover ?m - mover) ; distance of the mover from the loading bay
-        (remaining-charge-time ?m - mover)
+        ;(needed-battery ?m - mover ?c - crate)
     )
 
     (:predicates
@@ -62,10 +62,7 @@
             (assign (active-group) 0)
         )
     )
-    
-    
 
-    ; loader loads one crate per time
     (:durative-action load-group
         :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 4)
@@ -100,7 +97,6 @@
         )
     )
 
-    ; start - moving
     (:action pick-up
         :parameters (?c - crate ?m - mover)
         :precondition (and  
@@ -133,18 +129,14 @@
         :parameters (?m - mover)
         :duration (= ?duration 1)
         :condition (and 
-            (at start (and (= (distMover ?m) 0)
-            ))
-
+            (at start (and (= (distMover ?m) 0)))
         )
         :effect (and 
             ;(at end (and (assign (battery ?m) 20)
-            (at end (and (increase (battery ?m) 1)
+            (at end (and (increase (battery ?m) 5)
             ))
         )
     )
-    
-
 
     
 (:durative-action moving-empty
@@ -154,9 +146,7 @@
         (at start (free ?m))
         (at start (without-target ?m))
         (at start (> (distance ?c) 0))
-        (at start (>= (battery ?m) 20 ; #TODO: change it to the actual value
-            ;(+ (/ (distance ?c) 10) (* (distance ?c) (weight ?c)))
-        ))
+        (at start (>= (battery ?m) (/ (distance ?c) 10)))
     )
     :effect (and
         (at start (not (free ?m)))
@@ -176,13 +166,12 @@
             (over all (>= (distance ?c) 0))
             (at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 1))
-            (at start (> (battery ?m) 0))
+            (at start (> (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
         )
         :effect (and
             (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
             (at end (decrease (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
-            ;(decrease (distance ?c) (/ (* (distance ?c) (weight ?c)) 100))
         )
     )
 
@@ -194,8 +183,8 @@
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
             (over all (> (distance ?c) 0))
-            (at start (> (battery ?m1) 0))
-            (at start (> (battery ?m2) 0))
+            (at start (> (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
+            (at start (> (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))
         )
         :effect (and 
             (at end (at_loading_bay ?c))
@@ -213,8 +202,8 @@
             (over all (> (distance ?c) 0))
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
-            (at start (> (battery ?m1) 0))
-            (at start (> (battery ?m2) 0))
+            (at start (> (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
+            (at start (> (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))
         )
         :effect (and 
             (at end (at_loading_bay ?c))
