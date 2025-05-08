@@ -36,7 +36,7 @@
         (= (fragile crateA)0)
         (= (group crateA) 1)
         (= (carried crateA) 0)
-
+        (= (at-loading-bay crateA) 0)
 
         ; crateB
         (= (weight crateB) 80)
@@ -44,6 +44,7 @@
         (= (fragile crateB)1)
         (= (group crateB) 1)
         (= (carried crateB) 0)
+        (= (at-loading-bay crateB) 0)
 
         ; crateC
         (= (weight crateC) 20)
@@ -51,6 +52,7 @@
         (= (fragile crateC)0)
         (= (group crateC) 2)
         (= (carried crateC) 0)
+        (= (at-loading-bay crateC) 0)
 
         ; crateD
         (= (weight crateD) 30)
@@ -58,6 +60,7 @@
         (= (fragile crateD)0)
         (= (group crateD) 2)
         (= (carried crateD) 0)
+        (= (at-loading-bay crateD) 0)
 
     )
 
