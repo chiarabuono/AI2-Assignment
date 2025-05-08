@@ -5,6 +5,7 @@
         crateA crateB crateC crateD - crate
         moverA moverB - mover
         loaderA loaderB - loader
+        groupA groupB - groupClass
     )
 
     (:init
@@ -15,6 +16,19 @@
         ; loader
         (= (arm loaderA) 0)
         (= (arm loaderB) 1)
+
+        (= (battery moverA) 20)
+        (= (battery moverB) 20)
+        (= (distMover moverA) 0)
+        (= (distMover moverB) 0)
+
+        ; group
+        (= (active-group) 0)
+        (= (groupMember groupA) 2)
+        (= (groupMember groupB) 2)
+
+        (= (groupId groupA) 1)
+        (= (groupId groupB) 2)
         
         ; crateA
         (= (weight crateA) 70)

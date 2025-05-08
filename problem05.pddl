@@ -4,7 +4,8 @@
     (:objects 
         crateA crateB - crate
         moverA moverB - mover
-        loaderA loaderB - loader
+        loaderA loaderB - loader        
+        group0 groupA - groupClass
     )
 
     (:init
@@ -15,6 +16,19 @@
         ; loader
         (= (arm loaderA) 0)
         (= (arm loaderB) 1)
+    
+        (= (battery moverA) 20)
+        (= (battery moverB) 20)
+        (= (distMover moverA) 0)
+        (= (distMover moverB) 0)
+
+        ; group
+        (= (active-group) 0)
+        (= (groupMember group0) 1)
+        (= (groupMember groupA) 1)
+
+        (= (groupId group0) 0)
+        (= (groupId groupA) 1)
         
         ; crateA
         (= (weight crateA) 70)
