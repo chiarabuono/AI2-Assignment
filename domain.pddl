@@ -18,7 +18,8 @@
         (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
         (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
         (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
-        
+        (arm ?a - loader)
+
         ; group and loader
         (groupMember ?m - groupClass) ; number of crate per group
         (groupId ?g - groupClass)
@@ -67,11 +68,76 @@
         :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 4)
         :condition (and 
+            (at start (= (arm ?l) 0))
             (at start (and (at_loading_bay ?c) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (group ?c) active-group))
             (at start (= (groupId ?g) active-group))
             (at start (> (group ?c) 0))
+            (at start (= (fragile ?c) 0))
+
+        )
+        :effect (and 
+            (at start (and(not (free_loader ?l)) ))
+            (at end (and (free_loader ?l) (loaded ?c)))
+            (at end (decrease (groupMember ?g) 1))
+            (at end (not (at_loading_bay ?c)))
+        )
+    )
+
+    (:durative-action load-group-arm
+        :parameters (?c - crate ?l - loader ?g - groupClass)
+        :duration (= ?duration 4)
+        :condition (and 
+            (at start (= (arm ?l) 1))
+            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (= (carried ?c) 0))
+            (at start (= (group ?c) active-group))
+            (at start (= (groupId ?g) active-group))
+            (at start (> (group ?c) 0))
+            (at start (= (fragile ?c) 0))
+            (at start (< (weight ?c) 50))
+        )
+        :effect (and 
+            (at start (and(not (free_loader ?l)) ))
+            (at end (and (free_loader ?l) (loaded ?c)))
+            (at end (decrease (groupMember ?g) 1))
+            (at end (not (at_loading_bay ?c)))
+        )
+    )
+
+        (:durative-action load-group-fragile
+        :parameters (?c - crate ?l - loader ?g - groupClass)
+        :duration (= ?duration 6)
+        :condition (and 
+            (at start (= (arm ?l) 0))
+            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (= (carried ?c) 0))
+            (at start (= (group ?c) active-group))
+            (at start (= (groupId ?g) active-group))
+            (at start (> (group ?c) 0))
+            (at start (= (fragile ?c) 1))
+        )
+        :effect (and 
+            (at start (and(not (free_loader ?l)) ))
+            (at end (and (free_loader ?l) (loaded ?c)))
+            (at end (decrease (groupMember ?g) 1))
+            (at end (not (at_loading_bay ?c)))
+        )
+    )
+
+    (:durative-action load-group-arm-fragile
+        :parameters (?c - crate ?l - loader ?g - groupClass)
+        :duration (= ?duration 6)
+        :condition (and 
+            (at start (= (arm ?l) 1))
+            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (= (carried ?c) 0))
+            (at start (= (group ?c) active-group))
+            (at start (= (groupId ?g) active-group))
+            (at start (> (group ?c) 0))
+            (at start (< (weight ?c) 50))
+            (at start (= (fragile ?c) 1))
         )
         :effect (and 
             (at start (and(not (free_loader ?l)) ))
@@ -85,10 +151,12 @@
         :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 4)
         :condition (and 
+            (at start (= (arm ?l) 0))
             (at start (and (at_loading_bay ?c) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (group ?c) 0))
             (at start (= (group ?c) active-group))
+            (at start (= (fragile ?c) 0))
         )
         :effect (and 
             (at start (and(not (free_loader ?l)) ))
@@ -214,12 +282,14 @@
     )
 
     (:action drop
-        :parameters (?c - crate ?m - mover ?l - loader)
+        :parameters (?c - crate ?m - mover ?l1 - loader ?l2 - loader)
         :precondition (and  
             (= (distance ?c) 0) 
             (hold ?c ?m)
             (= (carried ?c) 1)
-            (free_loader ?l)
+            (free_loader ?l1)
+            (free_loader ?l2)
+            (not(= ?l1 ?l2))
         )
         :effect (and  
             (free ?m)
@@ -231,18 +301,24 @@
     )
     
     (:action drop-two-movers
-        :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
+        :parameters (?c - crate ?m1 - mover ?m2 - mover ?l1 - loader ?l2 - loader)
         :precondition (and 
-            (= (distance ?c) 0) (hold ?c ?m1) (hold ?c ?m2) 
+            (= (distance ?c) 0) 
+            (hold ?c ?m1) 
+            (hold ?c ?m2) 
             (not(= ?m1 ?m2))
             (= (carried ?c) 2)
-            (free_loader ?l)
+            (free_loader ?l1)
+            (free_loader ?l2)
+            (not(= ?l1 ?l2))
         )
         :effect (and  
             (free ?m1) (free ?m2)
-            (not (hold ?c ?m1)) (not (hold ?c ?m2))
+            (not (hold ?c ?m1)) 
+            (not (hold ?c ?m2))
             (assign (carried ?c) 0)
-            (without-target ?m1) (without-target ?m2)
+            (without-target ?m1) 
+            (without-target ?m2)
             (assign (distMover ?m1) 0)
             (assign (distMover ?m2) 0)
         )
