@@ -28,15 +28,13 @@
         ; mover
         (battery ?m - mover) 
         (distMover ?m - mover) ; distance of the mover from the loading bay
-        ;(needed-battery ?m - mover ?c - crate)
     )
 
     (:predicates
         (hold ?c - crate ?m - mover)
         (loaded ?c - crate) 
         (free ?m - mover)
-        (free_loader ?l - loader)
-        (at_loading_bay ?c - crate)    
+        (free_loader ?l - loader)   
 
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
@@ -70,7 +68,7 @@
         :duration (= ?duration 4)
         :condition (and 
             (at start (= (arm ?l) 0))
-            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (group ?c) active-group))
             (at start (= (groupId ?g) active-group))
@@ -82,7 +80,6 @@
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
             (at end (decrease (groupMember ?g) 1))
-            (at end (not (at_loading_bay ?c)))
         )
     )
 
@@ -91,7 +88,7 @@
         :duration (= ?duration 4)
         :condition (and 
             (at start (= (arm ?l) 1))
-            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (group ?c) active-group))
             (at start (= (groupId ?g) active-group))
@@ -103,7 +100,6 @@
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
             (at end (decrease (groupMember ?g) 1))
-            (at end (not (at_loading_bay ?c)))
         )
     )
 
@@ -112,7 +108,7 @@
         :duration (= ?duration 6)
         :condition (and 
             (at start (= (arm ?l) 0))
-            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (group ?c) active-group))
             (at start (= (groupId ?g) active-group))
@@ -123,7 +119,6 @@
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
             (at end (decrease (groupMember ?g) 1))
-            (at end (not (at_loading_bay ?c)))
         )
     )
 
@@ -132,7 +127,7 @@
         :duration (= ?duration 6)
         :condition (and 
             (at start (= (arm ?l) 1))
-            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (group ?c) active-group))
             (at start (= (groupId ?g) active-group))
@@ -144,7 +139,6 @@
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
             (at end (decrease (groupMember ?g) 1))
-            (at end (not (at_loading_bay ?c)))
         )
     )
 
@@ -153,7 +147,7 @@
         :duration (= ?duration 4)
         :condition (and 
             (at start (= (arm ?l) 0))
-            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (group ?c) 0))
             (at start (= (group ?c) active-group))
@@ -171,7 +165,7 @@
         :duration (= ?duration 4)
         :condition (and 
             (at start (= (arm ?l) 1))
-            (at start (and (= (at-loading-bay ?c) 1) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (fragile ?c) 0))
             (at start (< (weight ?c) 50))
@@ -187,7 +181,7 @@
         :duration (= ?duration 6)
         :condition (and 
             (at start (= (arm ?l) 0)) 
-            (at start (and (= (at-loading-bay ?c) 1) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (fragile ?c) 1))
         )
@@ -202,7 +196,7 @@
         :duration (= ?duration 6)
         :condition (and 
             (at start (= (arm ?l) 1)) 
-            (at start (and (= (at-loading-bay ?c) 1) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
             (at start (= (fragile ?c) 1))
             (at start (< (weight ?c) 50))
@@ -210,7 +204,6 @@
         :effect (and 
             (at start (and(not (free_loader ?l))))
             (at end (and (free_loader ?l) (loaded ?c)))
-            (at end (not (at_loading_bay ?c)))
         )
     )
 
@@ -221,7 +214,6 @@
             (= (carried ?c) 0)
             (< (weight ?c) 50) 
             (reached ?m ?c) 
-            (= (at-loading-bay ?c) 0)
             (= (fragile ?c) 0)
         )
         :effect (and    
@@ -238,7 +230,6 @@
             (free ?m1) 
             (free ?m2) 
             (= (carried ?c) 0) 
-            (= (at-loading-bay ?c) 0)
             (reached ?m1 ?c) 
             (reached ?m2 ?c)
         )
@@ -258,8 +249,8 @@
             (at start (and (= (distMover ?m) 0)))
         )
         :effect (and 
-            ;(at end (and (assign (battery ?m) 20)
-            (at end (and (increase (battery ?m) 5)
+            (at end (and (assign (battery ?m) 20)
+            ;(at end (and (increase (battery ?m) 5)
             ))
         )
     )
@@ -289,13 +280,11 @@
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
             (over all (hold ?c ?m))
-            (at start (= (at-loading-bay ?c) 0))
             (at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 1))
             (at start (> (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
         )
         :effect (and
-            (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
             (at end (decrease (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
         )
@@ -313,7 +302,6 @@
             (at start (> (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))
         )
         :effect (and 
-            (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
             (at end (decrease (battery ?m1) (/ (* (distance ?c) (weight ?c)) 150)))
             (at end (decrease (battery ?m2) (/ (* (distance ?c) (weight ?c)) 150)))
@@ -325,14 +313,12 @@
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
             (at start (> (weight ?c) 50))
-            (at start (= (at-loading-bay ?c) 0))
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
             (at start (> (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
             (at start (> (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))
         )
         :effect (and 
-            (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
             (at end (decrease (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
             (at end (decrease (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))

@@ -21,8 +21,6 @@
         (= (battery moverB) 20)
         (= (distMover moverA) 0)
         (= (distMover moverB) 0)
-        ;(= (remaining-charge-time moverA) 0)
-        ;(= (remaining-charge-time moverB) 0)
 
         ; group
         (= (active-group) 0)
@@ -42,7 +40,6 @@
         (= (fragile crateA)0)
         (= (group crateA) 0)
         (= (carried crateA) 0)
-        (= (at-loading-bay crateA) 0)
 
         ; crateB
         (= (weight crateB) 20)
@@ -50,7 +47,6 @@
         (= (fragile crateB)1)
         (= (group crateB) 1)
         (= (carried crateB) 0)
-        (= (at-loading-bay crateB) 0)
 
         ; crateC
         (= (weight crateC) 20)
@@ -58,7 +54,6 @@
         (= (fragile crateC)0)
         (= (group crateC) 1)
         (= (carried crateC) 0)
-        (= (at-loading-bay crateC) 0)
     )
 
     (:goal (and

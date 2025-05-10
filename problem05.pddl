@@ -36,7 +36,6 @@
         (= (fragile crateA) 0)
         (= (group crateA) 0)
         (= (carried crateA) 0)
-        (= (at-loading-bay crateA) 0)
 
         ; crateB
         (= (weight crateB) 20)
@@ -44,7 +43,6 @@
         (= (fragile crateB) 0)
         (= (group crateB) 1)
         (= (carried crateB) 0)
-        (= (at-loading-bay crateB) 0)
     )
 
     (:goal (and
