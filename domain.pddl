@@ -7,8 +7,7 @@
     (:types 
         crate 
         mover 
-        loader 
-        groupClass
+        loader
     )
 
     (:functions
@@ -23,8 +22,7 @@
         (hold ?c - crate ?m - mover)
         (loaded ?c - crate)
         (free ?m - mover)
-        (free_loader ?l - loader)
-        (at_loading_bay ?c - crate)    
+        (free_loader ?l - loader)  
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
         (not-carried ?c - crate) ; true if not false if carried
@@ -32,16 +30,15 @@
     )
 
     (:durative-action load
-        :parameters (?c - crate ?l - loader ?g - groupClass)
+        :parameters (?c - crate ?l - loader)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (not-carried ?c))
         )
         :effect (and 
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
-            (at end (not (at_loading_bay ?c)))
         )
     )
 
@@ -67,7 +64,7 @@
 
             ; drop
             (at end (and (free ?m) (without-target ?m)))
-            (at end (and (at_loading_bay ?c) (assign (distance ?c) 0)))
+            (at end (and (assign (distance ?c) 0)))
             (at end (not (hold ?c ?m)))
             (at end (not-carried ?c))
 
@@ -98,7 +95,7 @@
             ; drop
             (at end (and (free ?m1) (without-target ?m1)))
             (at end (and (free ?m2) (without-target ?m2)))
-            (at end (and (at_loading_bay ?c) (assign (distance ?c) 0)))
+            (at end (and (assign (distance ?c) 0)))
             (at end (not (hold ?c ?m1)))
             (at end (not (hold ?c ?m2)))
             (at end (not-carried ?c))
@@ -130,7 +127,7 @@
             ; drop
             (at end (and (free ?m1) (without-target ?m1)))
             (at end (and (free ?m2) (without-target ?m2)))
-            (at end (and (at_loading_bay ?c) (assign (distance ?c) 0)))
+            (at end (and (assign (distance ?c) 0)))
             (at end (not (hold ?c ?m1)))
             (at end (not (hold ?c ?m2)))
             (at end (not-carried ?c))

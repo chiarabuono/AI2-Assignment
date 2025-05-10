@@ -5,7 +5,6 @@
         crateA crateB crateC - crate
         moverA moverB - mover
         loaderA - loader
-        group0 groupA - groupClass
     )
 
     (:init
