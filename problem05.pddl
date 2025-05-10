@@ -4,13 +4,31 @@
     (:objects 
         crateA crateB - crate
         moverA moverB - mover
-        loaderA - loader        
+        loaderA loaderB - loader
+        group0 groupA - groupClass        
     )
 
     (:init
         (free moverA) (free moverB)
         (without-target moverA) (without-target moverB)
-        (free_loader loaderA)
+        (free_loader loaderA) (free_loader loaderB)
+
+        ; loader
+        (= (arm loaderA) 0)
+        (= (arm loaderB) 1)
+    
+        (= (battery moverA) 20)
+        (= (battery moverB) 20)
+        (= (distMover moverA) 0)
+        (= (distMover moverB) 0)
+
+        ; group
+        (= (active-group) 0)
+        (= (groupMember group0) 1)
+        (= (groupMember groupA) 1)
+
+        (= (groupId group0) 0)
+        (= (groupId groupA) 1)
         
         ; crateA
         (= (weight crateA) 70)
