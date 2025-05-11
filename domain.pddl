@@ -37,6 +37,7 @@
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
         (not-carried ?c - crate) ; true if not false if carried
+        (not-recharging ?m - mover) ; if false the mover can move
 
     )
 
@@ -244,6 +245,8 @@
             ; pick up
             (at start (and (free ?m) (reached ?m ?c)))
             (at start (and (not-carried ?c) (> (distance ?c) 0) (< (weight ?c) 50)))
+            (at start (> (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
+
             ; move
             (over all (>= (distance ?c) 0))
 
@@ -256,9 +259,12 @@
             (at start (hold ?c ?m))
             (at start (not (not-carried ?c)))
 
+            ; move
+            (at end (decrease (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
+
             ; drop
             (at end (and (free ?m) (without-target ?m)))
-            (at end (and (assign (distance ?c) 0)))
+            (at end (and (assign (distance ?c) 0) (assign (distMover ?m) 0)))
             (at end (not (hold ?c ?m)))
             (at end (not-carried ?c))
 
@@ -274,6 +280,9 @@
             (at start (and (free ?m2) (reached ?m2 ?c)))
             (at start (not(= ?m1 ?m2)))
             (at start (and (not-carried ?c) (> (distance ?c) 0) (< (weight ?c) 50)))
+            (at start (> (battery ?m1) (/ (* (distance ?c) (weight ?c)) 150)))
+            (at start (> (battery ?m2) (/ (* (distance ?c) (weight ?c)) 150)))
+
             ; move
             (over all (>= (distance ?c) 0))
 
@@ -287,10 +296,14 @@
             (at start (hold ?c ?m1))
             (at start (not (not-carried ?c)))
 
+            ; move
+            (at end (decrease (battery ?m1) (/ (* (distance ?c) (weight ?c)) 150)))
+            (at end (decrease (battery ?m2) (/ (* (distance ?c) (weight ?c)) 150)))
+
             ; drop
             (at end (and (free ?m1) (without-target ?m1)))
             (at end (and (free ?m2) (without-target ?m2)))
-            (at end (and (assign (distance ?c) 0)))
+            (at end (and (assign (distance ?c) 0) (assign (distMover ?m1) 0) (assign (distMover ?m2) 0)))
             (at end (not (hold ?c ?m1)))
             (at end (not (hold ?c ?m2)))
             (at end (not-carried ?c))
@@ -307,6 +320,9 @@
             (at start (and (free ?m2) (reached ?m2 ?c)))
             (at start (not(= ?m1 ?m2)))
             (at start (and (not-carried ?c) (> (distance ?c) 0) (>= (weight ?c) 50)))
+            (at start (> (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
+            (at start (> (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))
+
             ; move
             (over all (>= (distance ?c) 0))
 
@@ -320,10 +336,14 @@
             (at start (hold ?c ?m1))
             (at start (not (not-carried ?c)))
 
+            ; move
+            (at end (decrease (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
+            (at end (decrease (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))
+
             ; drop
             (at end (and (free ?m1) (without-target ?m1)))
             (at end (and (free ?m2) (without-target ?m2)))
-            (at end (and (assign (distance ?c) 0)))
+            (at end (and (assign (distance ?c) 0) (assign (distMover ?m1) 0) (assign (distMover ?m2) 0)))
             (at end (not (hold ?c ?m1)))
             (at end (not (hold ?c ?m2)))
             (at end (not-carried ?c))
@@ -338,12 +358,29 @@
             (at start (free ?m))
             (at start (without-target ?m))
             (at start (> (distance ?c) 0))
+            (over all (not-recharging ?m))
         )
         :effect (and
             (at start (not (free ?m)))
             (at start (not (without-target ?m)))
             (at end (reached ?m ?c))
             (at end (free ?m))
+            (at end (assign (distMover ?m) (distance ?c)))
+        )
+    )
+
+    (:durative-action recharge
+        :parameters (?m - mover)
+        :duration (= ?duration 1)
+        :condition (and 
+            (over all (and (= (distMover ?m) 0)))
+        )
+        :effect (and 
+            (at start (not (not-recharging ?m)))
+            (at end (not-recharging ?m))
+            (at end (and (assign (battery ?m) 20)
+            ;(at end (and (increase (battery ?m) 5)
+            ))
         )
     )
 

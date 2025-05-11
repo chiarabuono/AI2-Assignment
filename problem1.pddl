@@ -11,6 +11,7 @@
     (:init
         (free moverA) (free moverB)
         (without-target moverA) (without-target moverB)
+        (not-recharging moverA) (not-recharging moverB)
         (free_loader loaderA) (free_loader loaderB)
 
         
