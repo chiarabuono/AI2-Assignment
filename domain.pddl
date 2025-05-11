@@ -114,9 +114,32 @@
             ; arm
             (at start (= (arm ?l) 1))
             (at start (< (weight ?c) 50))
+
+            ; group
+            (at start (= (group ?c) 0))
+            (at start (= (group ?c) active-group))
         )
         :effect (and 
             (at start (and (not (free_loader ?l))))
+            (at end (and (free_loader ?l) (loaded ?c)))
+        )
+    )
+
+    (:durative-action load-fragile
+        :parameters (?c - crate ?l - loader)
+        :duration (= ?duration 6)
+        :condition (and 
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
+            (at start (not-carried ?c))
+            (at start (= (arm ?l) 0)) ; loader not arm
+            (at start (= (fragile ?c) 1)) ; fragile
+
+            ; no group
+            (at start (= (group ?c) 0))
+            (at start (= (group ?c) active-group))
+        )
+        :effect (and 
+            (at start (and(not (free_loader ?l))))
             (at end (and (free_loader ?l) (loaded ?c)))
         )
     )
@@ -178,6 +201,10 @@
             ; arm
             (at start (= (arm ?l) 1))
             (at start (< (weight ?c) 50))
+
+            ; group
+            (at start (= (group ?c) 0))
+            (at start (= (group ?c) active-group))
         )
         :effect (and 
             (at start (not (free_loader ?l)))
