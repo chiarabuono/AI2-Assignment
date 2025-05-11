@@ -67,13 +67,15 @@
         :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (= (arm ?l) 0))
             (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
+            (at start (= (arm ?l) 0))    ; loader not arm
+            (at start (= (fragile ?c) 0)) ; not fragile
+
+            ; group
             (at start (= (group ?c) active-group))
             (at start (= (groupId ?g) active-group))
             (at start (> (group ?c) 0))
-            (at start (= (fragile ?c) 0))
 
         )
         :effect (and 
@@ -87,13 +89,17 @@
         :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (= (arm ?l) 1))
             (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
+            (at start (= (fragile ?c) 0)) ; not fragile
+
+            ; group
             (at start (= (group ?c) active-group))
             (at start (= (groupId ?g) active-group))
             (at start (> (group ?c) 0))
-            (at start (= (fragile ?c) 0))
+
+            ; arm
+            (at start (= (arm ?l) 1))
             (at start (< (weight ?c) 50))
         )
         :effect (and 
@@ -107,13 +113,16 @@
         :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 6)
         :condition (and 
-            (at start (= (arm ?l) 0))
             (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
+            (at start (= (arm ?l) 0))    ; loader not arm
+            (at start (= (fragile ?c) 1)) ; fragile
+
+            ; group
             (at start (= (group ?c) active-group))
             (at start (= (groupId ?g) active-group))
             (at start (> (group ?c) 0))
-            (at start (= (fragile ?c) 1))
+
         )
         :effect (and 
             (at start (and(not (free_loader ?l)) ))
@@ -126,14 +135,19 @@
         :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 6)
         :condition (and 
-            (at start (= (arm ?l) 1))
             (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
+            (at start (= (fragile ?c) 1)) ; fragile
+
+            ; group
             (at start (= (group ?c) active-group))
             (at start (= (groupId ?g) active-group))
             (at start (> (group ?c) 0))
+
+            ; arm
+            (at start (= (arm ?l) 1))
             (at start (< (weight ?c) 50))
-            (at start (= (fragile ?c) 1))
+
         )
         :effect (and 
             (at start (and(not (free_loader ?l)) ))
@@ -146,13 +160,14 @@
         :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (= (arm ?l) 0))
             (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
+            (at start (= (arm ?l) 0)) ; not arm
+            (at start (= (fragile ?c) 0)) ; not fragile
+            
+            ; no group
             (at start (= (group ?c) 0))
             (at start (= (group ?c) active-group))
-
-            (at start (= (fragile ?c) 0))
         )
         :effect (and 
             (at start (and (not (free_loader ?l))))
@@ -164,11 +179,17 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (= (arm ?l) 1))
             (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
-            (at start (= (fragile ?c) 0))
+            (at start (= (fragile ?c) 0)) ; not fragile
+
+            ; arm
+            (at start (= (arm ?l) 1))
             (at start (< (weight ?c) 50))
+
+            ; no group
+            (at start (= (group ?c) 0))
+            (at start (= (group ?c) active-group))
         )
         :effect (and 
             (at start (and (not (free_loader ?l))))
@@ -180,10 +201,14 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 6)
         :condition (and 
-            (at start (= (arm ?l) 0)) 
             (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
-            (at start (= (fragile ?c) 1))
+            (at start (= (fragile ?c) 1)) ; fragile
+            (at start (= (arm ?l) 0))  ; not arm
+
+            ; no group
+            (at start (= (group ?c) 0))
+            (at start (= (group ?c) active-group))
         )
         :effect (and 
             (at start (and(not (free_loader ?l))))
@@ -195,11 +220,17 @@
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 6)
         :condition (and 
-            (at start (= (arm ?l) 1)) 
             (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
-            (at start (= (fragile ?c) 1))
+            (at start (= (fragile ?c) 1)) ; fragile
+
+            ; arm
+            (at start (= (arm ?l) 1)) 
             (at start (< (weight ?c) 50))
+
+            ; no group
+            (at start (= (group ?c) 0))
+            (at start (= (group ?c) active-group))
         )
         :effect (and 
             (at start (and(not (free_loader ?l))))
@@ -215,6 +246,7 @@
             (< (weight ?c) 50) 
             (reached ?m ?c) 
             (= (fragile ?c) 0)
+            (> (distance ?c) 0)         ; to avoid picking up a crate that is already at the loading bay
         )
         :effect (and    
             (hold ?c ?m) 
@@ -232,6 +264,7 @@
             (= (carried ?c) 0) 
             (reached ?m1 ?c) 
             (reached ?m2 ?c)
+            (> (distance ?c) 0) ; to avoid picking up a crate that is already at the loading bay
         )
         :effect (and    
             (assign (carried ?c) 2)
@@ -261,7 +294,7 @@
     :duration (= ?duration (/ (distance ?c) 10))
     :condition (and
         (at start (free ?m))
-        (at start (without-target ?m))
+        (at start (without-target ?m)) ; this allows to not add also the condition distMover = 0
         (at start (> (distance ?c) 0))
         (at start (>= (battery ?m) (/ (distance ?c) 10)))
     )
