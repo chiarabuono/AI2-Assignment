@@ -246,6 +246,7 @@
             (at start (and (free ?m) (reached ?m ?c)))
             (at start (and (not-carried ?c) (> (distance ?c) 0) (< (weight ?c) 50)))
             (at start (> (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
+            (at start (= (fragile ?c) 0))
 
             ; move
             (over all (>= (distance ?c) 0))
