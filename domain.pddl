@@ -16,6 +16,7 @@
         (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
         (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
         (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
+        (crates-at-loading-bay)
     )
 
     (:predicates
@@ -35,10 +36,12 @@
         :condition (and 
             (at start (and (at_loading_bay ?c) (free_loader ?l)))
             (at start (= (carried ?c) 0))
+            (over all (= (crates-at-loading-bay) 0))
         )
         :effect (and 
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
+            (at start (decrease (crates-at-loading-bay) 1))
         )
     )
 
@@ -146,7 +149,8 @@
             (free ?m)
             (not (hold ?c ?m))
             (assign (carried ?c) 0)
-            (without-target ?m)      
+            (without-target ?m)
+            (increase (crates-at-loading-bay) 1)      
         )
     )
     
@@ -163,6 +167,7 @@
             (not (hold ?c ?m1)) (not (hold ?c ?m2))
             (assign (carried ?c) 0)
             (without-target ?m1) (without-target ?m2)
+            (increase (crates-at-loading-bay) 1)
         )
     )
 )
