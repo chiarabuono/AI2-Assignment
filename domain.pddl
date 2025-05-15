@@ -313,7 +313,7 @@
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
             (over all (hold ?c ?m))
-            (at start (<= (weight ?c) 50))
+            ;(at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 1))
             (at start (> (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
         )
@@ -327,7 +327,7 @@
         :parameters (?c - crate ?m1 - mover ?m2 - mover)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 150))
         :condition (and
-            (at start (<= (weight ?c) 50))
+            ;(at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
             (over all (> (distance ?c) 0))
@@ -345,7 +345,7 @@
         :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
-            (at start (> (weight ?c) 50))
+            ;(at start (> (weight ?c) 50))
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
             (at start (> (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
