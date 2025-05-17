@@ -385,6 +385,19 @@
         )
     )
 
+    ; Recharge action to compare the different implementation of the battery
+    ; in macro vs no macro implementation
+    
+    ; (:action recharge
+    ;     :parameters (?m - mover)
+    ;     :precondition (and 
+    ;         (= (distMover ?m) 0)
+    ;         (free ?m)
+    ;     )
+    ;     :effect (and (assign (battery ?m) 20))
+    ; )
+    
+
 )
 
 
