@@ -281,6 +281,8 @@
         :parameters (?m - mover)
         :precondition (and 
              (= (distMover ?m) 0)
+             (free ?m)
+             
         )
         :effect (and 
             ;(not (not-recharging ?m))
