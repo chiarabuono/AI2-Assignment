@@ -280,17 +280,10 @@
     (:action recharge
         :parameters (?m - mover)
         :precondition (and 
-             (= (distMover ?m) 0)
-             (free ?m)
-             
+            (= (distMover ?m) 0)
+            (free ?m)
         )
-        :effect (and 
-            ;(not (not-recharging ?m))
-            (not-recharging ?m)
-            (assign (battery ?m) 20)
-            ;(at end (and (increase (battery ?m) 5)
-            
-        )
+        :effect (and (assign (battery ?m) 20))
     )
 
 
