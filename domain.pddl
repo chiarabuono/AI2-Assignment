@@ -38,6 +38,8 @@
 
         (reached ?m - mover ?c - crate) ; the mover reached the crate
         (without-target ?m - mover)     ; the mover has not a target
+        (not-recharging ?m - mover) ; if false the mover can move
+        
 
     )
 
@@ -275,18 +277,20 @@
         )
     )
 
-    (:durative-action recharge
+    (:action recharge
         :parameters (?m - mover)
-        :duration (= ?duration 1)
-        :condition (and 
-            (at start (and (= (distMover ?m) 0)))
+        :precondition (and 
+             (= (distMover ?m) 0)
         )
         :effect (and 
-            (at end (and (assign (battery ?m) 20)
+            ;(not (not-recharging ?m))
+            (not-recharging ?m)
+            (assign (battery ?m) 20)
             ;(at end (and (increase (battery ?m) 5)
-            ))
+            
         )
     )
+
 
     
 (:durative-action moving-empty
@@ -294,7 +298,8 @@
     :duration (= ?duration (/ (distance ?c) 10))
     :condition (and
         (at start (free ?m))
-        (at start (without-target ?m)) ; this allows to not add also the condition distMover = 0
+        (at start (without-target ?m))
+        (over all (not-recharging ?m))
         (at start (> (distance ?c) 0))
         (at start (>= (battery ?m) (/ (distance ?c) 10)))
     )
