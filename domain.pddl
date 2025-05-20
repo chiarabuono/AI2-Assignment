@@ -2,7 +2,6 @@
     (domain warehouse)
     (:requirements  :strips :typing :conditional-effects :equality :fluents :numeric-fluents
                     :time :duration-inequalities :negative-preconditions
-        ; :durative-actions :timed-initial-literals :negative-preconditions :disjunctive-preconditions
     )
     (:types 
         crate 
@@ -18,7 +17,7 @@
         (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
         (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
         (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
-        (arm ?a - loader)
+        (arm ?a - loader)  ; loader cheap (arm = 1) or not (arm = 0)
 
         ; group and loader
         (groupMember ?m - groupClass) ; number of crate per group
@@ -26,23 +25,24 @@
         (active-group)
 
         ; mover
-        (battery ?m - mover) 
-        (distMover ?m - mover) ; distance of the mover from the loading bay
+        (battery ?m - mover) ; mover's battery level 
+        (distMover ?m - mover) ; distance of the mover from loading bay
     )
 
     (:predicates
-        (hold ?c - crate ?m - mover)
-        (loaded ?c - crate) 
-        (free ?m - mover)
-        (free_loader ?l - loader)   
+        (hold ?c - crate ?m - mover) ; true if crate c is held by mover m
+        (loaded ?c - crate) ; true if crate c is loaded
+        (free ?m - mover) ; true when the mover is not carrying any crate
+        (free_loader ?l - loader)   ; true when loader is not loading any crate
 
-        (reached ?m - mover ?c - crate) ; the mover reached the crate
-        (without-target ?m - mover)     ; the mover has not a target
+        (reached ?m - mover ?c - crate) ; true if the mover reached the crate
+        (without-target ?m - mover)     ; true when the mover has not a target
         (not-recharging ?m - mover) ; if false the mover can move
         
 
     )
 
+    ; Group extension. Select a group
     (:action choose_group
         :parameters (?g - groupClass)
         :precondition (and 
@@ -54,6 +54,7 @@
         )
     )
 
+    ; Group extension. Reset active group to 0
     (:action reset_group
         :parameters (?g - groupClass)
         :precondition (and 
@@ -65,6 +66,7 @@
         )
     )
 
+    ; basic load function
     (:durative-action load-group
         :parameters (?c - crate ?l - loader ?g - groupClass)
         :duration (= ?duration 4)
@@ -240,6 +242,7 @@
         )
     )
 
+    ; one mover picks up a crate
     (:action pick-up
         :parameters (?c - crate ?m - mover)
         :precondition (and  
@@ -258,6 +261,7 @@
         )
     )
 
+    ; two movers pick up a crate
     (:action pick-up-two-movers
         :parameters (?c - crate ?m1 - mover ?m2 - mover)
         :precondition (and  
@@ -277,6 +281,7 @@
         )
     )
 
+    ; battery extension
     (:action recharge
         :parameters (?m - mover)
         :precondition (and 
@@ -286,34 +291,50 @@
         :effect (and (assign (battery ?m) 20))
     )
 
+    ; Recharge durative action    
 
-    
-(:durative-action moving-empty
-    :parameters (?m - mover ?c - crate)
-    :duration (= ?duration (/ (distance ?c) 10))
-    :condition (and
-        (at start (free ?m))
-        (at start (without-target ?m))
-        (over all (not-recharging ?m))
-        (at start (> (distance ?c) 0))
-        (at start (>= (battery ?m) (/ (distance ?c) 10)))
-    )
-    :effect (and
-        (at start (not (free ?m)))
-        (at start (not (without-target ?m)))
-        (at end (reached ?m ?c))
-        (at end (free ?m))
-        (at end (decrease (battery ?m) (/ (distance ?c) 10)))
-        (at end (assign (distMover ?m) (distance ?c)))
-    )
-)
+    ; (:durative-action recharge
+    ;     :parameters (?m - mover)
+    ;     :duration (= ?duration 1)
+    ;     :condition (and 
+    ;         (over all (and (= (distMover ?m) 0)))
+    ;     )
+    ;     :effect (and 
+    ;         (at start (not (not-recharging ?m)))
+    ;         (at end (not-recharging ?m))
+    ;         (at end (assign (battery ?m) 20))
+    ;     )
+    ; )
 
+
+
+    ; moving towards the crate
+    (:durative-action moving-empty
+        :parameters (?m - mover ?c - crate)
+        :duration (= ?duration (/ (distance ?c) 10))
+        :condition (and
+            (at start (free ?m))
+            (at start (without-target ?m))
+            (over all (not-recharging ?m))
+            (at start (> (distance ?c) 0))
+            (at start (>= (battery ?m) (/ (distance ?c) 10)))
+        )
+        :effect (and
+            (at start (not (free ?m)))
+            (at start (not (without-target ?m)))
+            (at end (reached ?m ?c))
+            (at end (free ?m))
+            (at end (decrease (battery ?m) (/ (distance ?c) 10)))
+            (at end (assign (distMover ?m) (distance ?c)))
+        )
+    )
+
+    ; moving crate back to the loading bay with one mover
     (:durative-action moving
         :parameters (?c - crate ?m - mover)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
             (over all (hold ?c ?m))
-            ;(at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 1))
             (at start (> (battery ?m) (/ (* (distance ?c) (weight ?c)) 100)))
         )
@@ -323,11 +344,12 @@
         )
     )
 
+    ; moving light crate back to the loading bay with two movers
     (:durative-action moving-two-movers-light
         :parameters (?c - crate ?m1 - mover ?m2 - mover)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 150))
         :condition (and
-            ;(at start (<= (weight ?c) 50))
+            (at start (<= (weight ?c) 50))
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
             (over all (> (distance ?c) 0))
@@ -341,11 +363,12 @@
         )
     )
 
+    ; moving heavy crate back to the loading bay with two movers
     (:durative-action moving-two-movers-heavy
         :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
         :condition (and 
-            ;(at start (> (weight ?c) 50))
+            (at start (> (weight ?c) 50))
             (at start (= (carried ?c) 2))
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
             (at start (> (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
@@ -358,6 +381,7 @@
         )
     )
 
+    ; one mover drops a crate
     (:action drop
         :parameters (?c - crate ?m - mover ?l1 - loader ?l2 - loader)
         :precondition (and  
@@ -377,6 +401,7 @@
         )
     )
     
+    ; two movers drop a crate
     (:action drop-two-movers
         :parameters (?c - crate ?m1 - mover ?m2 - mover ?l1 - loader ?l2 - loader)
         :precondition (and 
