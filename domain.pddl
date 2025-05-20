@@ -2,7 +2,6 @@
     (domain warehouse)
     (:requirements  :strips :typing :conditional-effects :equality :fluents :numeric-fluents
                     :time :duration-inequalities 
-        ; :durative-actions :timed-initial-literals :negative-preconditions :disjunctive-preconditions
     )
     (:types 
         crate 
@@ -19,16 +18,17 @@
     )
 
     (:predicates
-        (hold ?c - crate ?m - mover)
-        (loaded ?c - crate)
-        (free ?m - mover)
-        (free_loader ?l - loader)  
-        (reached ?m - mover ?c - crate) ; the mover reached the crate
-        (without-target ?m - mover)     ; the mover has not a target
-        (not-carried ?c - crate) ; true if not false if carried
+        (hold ?c - crate ?m - mover) ; true if crate c is held by mover m
+        (loaded ?c - crate) ; true if crate c is loaded
+        (free ?m - mover) ; true when the mover is not carrying any crate
+        (free_loader ?l - loader)   ; true when loader is not loading any crate
+        (reached ?m - mover ?c - crate) ; true if the mover reached the crate
+        (without-target ?m - mover)     ; true when the mover has not a target
+        (not-carried ?c - crate) ; true when crate on the ground
 
     )
 
+    ; basic load function
     (:durative-action load
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 4)
@@ -42,7 +42,7 @@
         )
     )
 
-
+    ; pick-up, moving, drop macro
     (:durative-action move
         :parameters (?m - mover ?c - crate ?l - loader)
         :duration (= ?duration (/ (* (distance ?c) (weight ?c)) 100))
@@ -71,6 +71,7 @@
         )
     )
 
+    ; pick-up-two-movers, moving-two-movers-light, drop-two-movers macro
     (:durative-action move2movers-light
         :parameters (?m1 - mover ?m2 - mover ?c - crate ?l - loader)
         :duration (= ?duration (/ (* (distance ?c) (weight ?c)) 150))
@@ -103,6 +104,7 @@
         )
     )
 
+    ; pick-up-two-movers, moving-two-movers-heavy, drop-two-movers macro
     (:durative-action move2movers-heavy
         :parameters (?m1 - mover ?m2 - mover ?c - crate ?l - loader)
         :duration (= ?duration (/ (* (distance ?c) (weight ?c)) 100))
@@ -135,6 +137,7 @@
         )
     )
         
+    ; moving towards the crate
     (:durative-action moving-empty
         :parameters (?m - mover ?c - crate)
         :duration (= ?duration (/ (distance ?c) 10))
