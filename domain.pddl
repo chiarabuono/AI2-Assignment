@@ -2,7 +2,6 @@
     (domain warehouse)
     (:requirements  :strips :typing :conditional-effects :equality :fluents :numeric-fluents
                     :time :duration-inequalities 
-        ; :durative-actions :timed-initial-literals :negative-preconditions :disjunctive-preconditions
     )
     (:types 
         crate 
@@ -16,36 +15,32 @@
         (fragile ?f -crate) ; 0 for not fragile, 1 for fragile
         (group ?g - crate) ; 0 for no group, 1 for group A, 2 for group B
         (carried ?c - crate) ; the crate is carried by no-one (0), by a mover (1), by two movers (2)
-        (crates-at-loading-bay)
     )
 
     (:predicates
-        (hold ?c - crate ?m - mover)
-        (loaded ?c - crate)
-        (free ?m - mover)
-        (free_loader ?l - loader)
-        (at_loading_bay ?c - crate)    
-        (reached ?m - mover ?c - crate) ; the mover reached the crate
-        (without-target ?m - mover)     ; the mover has not a target
+        (hold ?c - crate ?m - mover) ; true if crate c is held by mover m
+        (loaded ?c - crate) ; true if crate c is loaded
+        (free ?m - mover) ; true when the mover is not carrying any crate
+        (free_loader ?l - loader) ; true when loader is not loading any crate  
+        (reached ?m - mover ?c - crate) ; true if the mover reached the crate
+        (without-target ?m - mover)     ; true when the mover has not a target
     )
 
-    ; loader loads one crate per time
+    ; basic load function
     (:durative-action load
         :parameters (?c - crate ?l - loader)
         :duration (= ?duration 4)
         :condition (and 
-            (at start (and (at_loading_bay ?c) (free_loader ?l)))
+            (at start (and (= (distance ?c) 0) (free_loader ?l)))
             (at start (= (carried ?c) 0))
-            (over all (= (crates-at-loading-bay) 0))
         )
         :effect (and 
             (at start (and(not (free_loader ?l)) ))
             (at end (and (free_loader ?l) (loaded ?c)))
-            (at start (decrease (crates-at-loading-bay) 1))
         )
     )
 
-    ; start - moving
+    ; one mover picks up a crate
     (:action pick-up
         :parameters (?c - crate ?m - mover)
         :precondition (and  
@@ -60,6 +55,7 @@
         )
     )
 
+    ; two movers pick up a crate
     (:action pick-up-two-movers
         :parameters (?c - crate ?m1 - mover ?m2 - mover)
         :precondition (and  
@@ -74,7 +70,7 @@
         )
     )
 
-    ; a loader could be moving in the same direction target by another mover
+    ; moving towards the crate
     (:durative-action moving-empty
         :parameters (?m - mover ?c - crate) ; ?l - loader
         :duration (= ?duration (/ (distance ?c) 10))
@@ -91,6 +87,7 @@
         )
     )
     
+    ; moving crate back to the loading bay with one mover
     (:durative-action moving
         :parameters (?c - crate ?m - mover ?l - loader)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
@@ -101,12 +98,11 @@
             (at start (= (carried ?c) 1))
         )
         :effect (and
-            (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
-            ;(decrease (distance ?c) (/ (* (distance ?c) (weight ?c)) 100))
         )
     )
 
+    ; moving light crate back to the loading bay with two movers
     (:durative-action moving-two-movers-light
         :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 150))
@@ -117,11 +113,11 @@
             (over all (> (distance ?c) 0))
         )
         :effect (and 
-            (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
         )
     )
 
+    ; moving heavy crate back to the loading bay with two movers
     (:durative-action moving-two-movers-heavy
         :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
         :duration (>= ?duration (/ (* (distance ?c) (weight ?c)) 100))
@@ -132,11 +128,11 @@
             (over all (and (not(= ?m1 ?m2)) (hold ?c ?m1) (hold ?c ?m2)))
         )
         :effect (and 
-            (at end (at_loading_bay ?c))
             (at end (assign (distance ?c) 0))
         )
     )
 
+    ; one mover drops a crate
     (:action drop
         :parameters (?c - crate ?m - mover ?l - loader)
         :precondition (and  
@@ -149,16 +145,16 @@
             (free ?m)
             (not (hold ?c ?m))
             (assign (carried ?c) 0)
-            (without-target ?m)
-            (increase (crates-at-loading-bay) 1)      
+            (without-target ?m)      
         )
     )
-    
+
+    ; two movers drop a crate
     (:action drop-two-movers
         :parameters (?c - crate ?m1 - mover ?m2 - mover ?l - loader)
         :precondition (and 
             (= (distance ?c) 0) (hold ?c ?m1) (hold ?c ?m2) 
-            (not(= ?m1 ?m2)) ;(not(free ?m1)) (not(free ?m2))
+            (not(= ?m1 ?m2))
             (= (carried ?c) 2)
             (free_loader ?l)
         )
@@ -167,7 +163,6 @@
             (not (hold ?c ?m1)) (not (hold ?c ?m2))
             (assign (carried ?c) 0)
             (without-target ?m1) (without-target ?m2)
-            (increase (crates-at-loading-bay) 1)
         )
     )
 )
