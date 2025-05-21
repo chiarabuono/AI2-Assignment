@@ -343,8 +343,8 @@
             (at start (not (not-carried ?c)))
 
             ; move
-            (at start (decrease (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
-            (at start (decrease (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))
+            (at end (decrease (battery ?m1) (/ (* (distance ?c) (weight ?c)) 100)))
+            (at end (decrease (battery ?m2) (/ (* (distance ?c) (weight ?c)) 100)))
 
             ; drop
             (at end (and (free ?m1) (without-target ?m1)))
@@ -373,6 +373,7 @@
             (at end (reached ?m ?c))
             (at end (free ?m))
             (at end (assign (distMover ?m) (distance ?c)))
+            (at end (decrease (battery ?m) (/ (distance ?c) 10)))
         )
     )
 
